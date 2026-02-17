@@ -1,0 +1,46 @@
+{
+  "agent": "CRM Logger Agent",
+  "timestamp": "2026-02-17T10:04:55.638173",
+  "input": {
+    "lead_id": "L008",
+    "source_agent": "email_strategy",
+    "event_type": "email_sent",
+    "email_id": "E123",
+    "subject": "Follow-up on our conversation",
+    "engagement_score": 0.85
+  },
+  "metrics": {
+    "total_events": 5,
+    "event_counts": {
+      "lead_research_update": 1,
+      "intent_update": 2,
+      "email_sent": 2
+    },
+    "email_metrics": {
+      "total_sent": 2,
+      "total_replies": 0,
+      "response_rate": 0.0
+    }
+  },
+  "timeline": {
+    "first_contact": "2026-02-17T10:04:55.622111",
+    "last_email_sent": "2026-02-17T10:04:55.629020",
+    "next_scheduled_followup": null
+  },
+  "summary": {
+    "lead_summary": {
+      "total_events": 5,
+      "event_types": [
+        "lead_research_update",
+        "intent_update",
+        "email_sent"
+      ],
+      "response_rate": 0.0
+    },
+    "timeline": {
+      "first_contact": "2026-02-17T10:04:55.622111",
+      "last_contact": "2026-02-17T10:04:55.629020",
+      "next_followup": null
+    }
+  }
+}

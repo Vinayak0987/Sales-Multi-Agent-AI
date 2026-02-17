@@ -1,7 +1,12 @@
+import os
 import pandas as pd
 from datetime import datetime, timedelta
 from agents.crm_logger_agent import CRMLoggerAgent
 import json
+
+# Create output directory
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "outputs")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def test_with_real_data():
     """Test CRM Logger with real data from all agents."""
@@ -144,6 +149,20 @@ def test_with_real_data():
         }
     }
     print(json.dumps(key_insights, indent=2))
+    
+    # Save output to file
+    output_file = os.path.join(OUTPUT_DIR, "crm_logger_output.json")
+    output_data = {
+        "agent": "CRM Logger Agent",
+        "timestamp": datetime.now().isoformat(),
+        "input": sample_event,
+        "metrics": metrics,
+        "timeline": timeline,
+        "summary": key_insights
+    }
+    with open(output_file, "w") as f:
+        json.dump(output_data, f, indent=2, default=str)
+    print(f"\n✅ Output saved to: {output_file}")
 
 if __name__ == "__main__":
     test_with_real_data()

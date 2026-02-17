@@ -247,7 +247,7 @@ def create_lead_research_graph(llm, prompt_templates):
         return generate_insights(state, llm, prompt_templates)
     
     # Create workflow
-    workflow = StateGraph(input=Dict[str, Any], output=Dict[str, Any])
+    workflow = StateGraph(state_schema=Dict[str, Any])
     
     # Add nodes
     workflow.add_node("prepare_data", prepare_data)

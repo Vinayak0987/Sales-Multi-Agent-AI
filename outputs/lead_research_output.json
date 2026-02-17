@@ -1,0 +1,53 @@
+{
+  "agent": "Lead Research Agent",
+  "timestamp": "2026-02-17T10:06:00.861712",
+  "input": {
+    "lead": {
+      "company": "Dillon PLC",
+      "region": "North America",
+      "source": "Olark Chat",
+      "visits": 0,
+      "time_on_site": 0.0,
+      "pages_per_visit": 0.0
+    }
+  },
+  "result": {
+    "lead_quality_indicators": {
+      "behavioral": [
+        {
+          "metric": "Engagement Score",
+          "threshold": ">0.0",
+          "importance": 0.9
+        }
+      ],
+      "demographic": [
+        {
+          "metric": "Company Size",
+          "threshold": "50-500 employees",
+          "importance": 0.7
+        }
+      ]
+    },
+    "engagement_recommendations": [
+      {
+        "segment": "Leads with 0 Engagement Score and incomplete profile data",
+        "strategy": "Automated email drip for data enrichment and initial content consumption",
+        "expected_impact": 0.5
+      }
+    ]
+  },
+  "summary": {
+    "quality_indicators": [
+      {
+        "metric": "Engagement Score",
+        "threshold": ">0.0",
+        "importance": 0.9
+      }
+    ],
+    "recommendation": {
+      "segment": "Leads with 0 Engagement Score and incomplete profile data",
+      "strategy": "Automated email drip for data enrichment and initial content consumption",
+      "expected_impact": 0.5
+    }
+  }
+}

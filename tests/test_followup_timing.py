@@ -13,6 +13,10 @@ from langgraph_nodes.followup_timing_node import (
 )
 from agents.followup_timing_agent import FollowUpTimingAgent
 
+# Create output directory
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "outputs")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 def test_data_processing():
     """Test data processing without LLM"""
     print("\n=== Testing Data Processing ===")
@@ -79,7 +83,7 @@ def main():
     if not api_key:
         raise ValueError("GOOGLE_API_KEY not found")
     genai.configure(api_key=api_key)
-    llm = genai.GenerativeModel('gemini-1.5-pro')
+    llm = genai.GenerativeModel('gemini-2.5-flash')
     
     # Test full agent
     print("\nFollow-up Timing Agent created")
@@ -140,6 +144,19 @@ def main():
         "engagement_prediction": result["engagement_prediction"]
     }
     print(json.dumps(output, indent=2))
+    
+    # Save output to file
+    output_file = os.path.join(OUTPUT_DIR, "followup_timing_output.json")
+    output_data = {
+        "agent": "Follow-Up Timing Agent",
+        "timestamp": datetime.now().isoformat(),
+        "input": input_data,
+        "result": result,
+        "summary": output
+    }
+    with open(output_file, "w") as f:
+        json.dump(output_data, f, indent=2)
+    print(f"\n✅ Output saved to: {output_file}")
 
 if __name__ == "__main__":
     main()

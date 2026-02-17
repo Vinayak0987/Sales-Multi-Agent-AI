@@ -3,9 +3,14 @@ import json
 import time
 import pandas as pd
 import tempfile
+from datetime import datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
 from agents.lead_research_agent import LeadResearchAgent
+
+# Create output directory
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "outputs")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Load environment variables
 load_dotenv()
@@ -21,16 +26,12 @@ def setup_llm():
     genai.configure(api_key=api_key)
     
     # Create model
-    model = genai.GenerativeModel('models/gemini-1.5-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     print("LLM setup complete")
     return model
 
 def test_lead_research_agent():
     """Test the LeadResearch agent with real data"""
-    
-    # Wait to avoid rate limits
-    print("\nWaiting 60 seconds to avoid rate limits...")
-    time.sleep(60)
     
     # Setup LLM
     llm = setup_llm()
@@ -95,6 +96,19 @@ def test_lead_research_agent():
         "recommendation": result_json["engagement_recommendations"][0]  # Show top recommendation
     }
     print(json.dumps(output, indent=2))
+    
+    # Save output to file
+    output_file = os.path.join(OUTPUT_DIR, "lead_research_output.json")
+    output_data = {
+        "agent": "Lead Research Agent",
+        "timestamp": datetime.now().isoformat(),
+        "input": input_data,
+        "result": result_json,
+        "summary": output
+    }
+    with open(output_file, "w") as f:
+        json.dump(output_data, f, indent=2)
+    print(f"\n✅ Output saved to: {output_file}")
     
     # Cleanup
     os.unlink(leads_path)

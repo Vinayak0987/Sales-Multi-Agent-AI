@@ -234,7 +234,7 @@ def create_intent_qualifier_graph(llm, prompt_templates):
     print("\n=== Creating Intent Qualifier Graph ===")
     
     # Create workflow
-    workflow = StateGraph(input=Dict[str, Any], output=Dict[str, Any])
+    workflow = StateGraph(state_schema=Dict[str, Any])
     
     # Add nodes
     workflow.add_node("prepare_data", prepare_data)

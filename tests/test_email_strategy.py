@@ -3,24 +3,25 @@
 import os
 import json
 import time
+from datetime import datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
 from agents.email_strategy_agent import EmailStrategyAgent
 
+# Create output directory
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "outputs")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 def test_email_strategy():
     """Test email strategy agent with a single qualified lead"""
     
-    # Wait to avoid rate limits
-    print("\nWaiting 60 seconds to avoid rate limits...")
-    time.sleep(60)
-    
-    # Setup LLM - KEEPING ORIGINAL SETUP
+    # Setup LLM
     load_dotenv()
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GOOGLE_API_KEY not found")
     genai.configure(api_key=api_key)
-    llm = genai.GenerativeModel('models/gemini-1.5-pro')
+    llm = genai.GenerativeModel('gemini-2.5-flash')
     print(f"Using model: {llm.model_name}")
     
     # Setup company info
@@ -124,6 +125,19 @@ def test_email_strategy():
     print(f"\nPersonalization Factors:")
     for factor in email['personalization']:
         print(f"- {factor}")
+
+    # Save output to file
+    output_file = os.path.join(OUTPUT_DIR, "email_strategy_output.json")
+    output_data = {
+        "agent": "Email Strategy Agent",
+        "timestamp": datetime.now().isoformat(),
+        "input": input_data,
+        "email": email,
+        "summary": output
+    }
+    with open(output_file, "w") as f:
+        json.dump(output_data, f, indent=2)
+    print(f"\n✅ Output saved to: {output_file}")
 
     return {
         "agent": email_agent,

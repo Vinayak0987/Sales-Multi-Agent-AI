@@ -5,10 +5,15 @@ This module tests the Intent Qualifier Agent with real data.
 
 import os
 import json
+from datetime import datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
 from agents.intent_qualifier_agent import IntentQualifierAgent
 import time
+
+# Create output directory
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "outputs")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Load environment variables
 load_dotenv()
@@ -24,7 +29,7 @@ def setup_llm():
     genai.configure(api_key=api_key)
     
     # Create model
-    model = genai.GenerativeModel('models/gemini-1.5-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     print("LLM setup complete")
     
     # Create wrapper
@@ -41,10 +46,6 @@ def setup_llm():
 
 def test_intent_qualifier():
     """Test the Intent Qualifier Agent with real data"""
-    
-    # Wait to avoid rate limits
-    print("\nWaiting 60 seconds to avoid rate limits...")
-    time.sleep(60)
     
     # Setup LLM
     llm = setup_llm()
@@ -109,6 +110,19 @@ def test_intent_qualifier():
         "recommendation": result["insights"]["recommendations"][0]  # Show top recommendation
     }
     print(json.dumps(output, indent=2))
+    
+    # Save output to file
+    output_file = os.path.join(OUTPUT_DIR, "intent_qualifier_output.json")
+    output_data = {
+        "agent": "Intent Qualifier Agent",
+        "timestamp": datetime.now().isoformat(),
+        "input": input_data,
+        "result": result,
+        "summary": output
+    }
+    with open(output_file, "w") as f:
+        json.dump(output_data, f, indent=2, default=str)
+    print(f"\n✅ Output saved to: {output_file}")
     
     return {
         "agent": agent,
