@@ -37,3 +37,10 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend dependencies
+node_modules/
+.next/
+
+# Temporary Design Files
+stitch_*.html
