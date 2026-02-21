@@ -1,226 +1,175 @@
 "use client";
 import DashboardLayout from "@/components/DashboardLayout";
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useBatchProgress } from "@/hooks/useBatchProgress";
 
-const API = "http://localhost:8000/api";
+function AgentMonitorView() {
+    const searchParams = useSearchParams();
+    const batchId = searchParams.get('batch');
+    const progress = useBatchProgress(batchId);
 
-const STAGES = [
-    { key: "lead_research", label: "RESEARCH", icon: "search", color: "#52c41a" },
-    { key: "intent_qualifier", label: "INTENT", icon: "gps_fixed", color: "#fa8c16" },
-    { key: "email_strategy", label: "EMAIL STRATEGY", icon: "mail", color: "#2f54eb" },
-    { key: "followup_timing", label: "TIMING", icon: "schedule", color: "#eb2f96" },
-    { key: "crm_logger", label: "LOGGER", icon: "storage", color: "#722ed1" },
-];
+    // Fallback UI if not provided
+    if (!batchId) {
+        return (
+            <div className="flex flex-col items-center justify-center p-24 font-mono text-ink/50 uppercase">
+                Awaiting active batch allocation_
+            </div>
+        );
+    }
 
-export default function AgentMonitorPage() {
-    const [agents, setAgents] = useState([]);
-    const [outputs, setOutputs] = useState([]);
-    const [selectedAgent, setSelectedAgent] = useState(null);
-    const [running, setRunning] = useState(null);
-    const [runResult, setRunResult] = useState(null);
+    if (!progress) {
+        return (
+            <div className="flex flex-col items-center justify-center p-24 font-mono animate-pulse text-primary uppercase font-bold">
+                Connecting Pipeline Stream...
+            </div>
+        );
+    }
 
-    useEffect(() => {
-        fetch(`${API}/agents/status`).then(r => r.json()).then(d => setAgents(d.agents || [])).catch(() => { });
-        fetch(`${API}/agents/outputs`).then(r => r.json()).then(d => setOutputs(d.outputs || [])).catch(() => { });
-    }, []);
-
-    const runAgent = async (agentId) => {
-        setRunning(agentId);
-        setRunResult(null);
-        try {
-            const res = await fetch(`${API}/agents/run/${agentId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({}),
-            });
-            const data = await res.json();
-            setRunResult(data);
-            // Refresh status
-            fetch(`${API}/agents/status`).then(r => r.json()).then(d => setAgents(d.agents || [])).catch(() => { });
-        } catch (err) {
-            setRunResult({ error: "Connection failed" });
-        }
-        setRunning(null);
-    };
-
-    const getStageStatus = (key) => {
-        const agent = agents.find(a => a.id === key);
-        if (running === key) return "running";
-        return agent?.status || "idle";
-    };
-
-    const statusBadge = (status) => {
-        switch (status) {
-            case "completed": return <span className="badge badge-green">COMPLETE</span>;
-            case "running": return <span className="badge badge-yellow" style={{ animation: "pulse 1.5s infinite" }}>RUNNING</span>;
-            case "error": return <span className="badge badge-red">ERROR</span>;
-            default: return <span className="badge" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>IDLE</span>;
-        }
-    };
+    const agentList = [
+        { id: 'research', name: 'Research Agent', status: progress.agents?.research || 'pending' },
+        { id: 'intent', name: 'Intent Scoring', status: progress.agents?.intent || 'pending' },
+        { id: 'message', name: 'Message Draft', status: progress.agents?.message || 'pending' },
+        { id: 'timing', name: 'Timing Engine', status: progress.agents?.timing || 'pending' },
+        { id: 'logger', name: 'Data Logger', status: progress.agents?.logger || 'pending' }
+    ];
 
     return (
-        <DashboardLayout>
-            <div className="animate-in">
-                <div style={{ marginBottom: 28 }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Agent Monitor</h1>
-                    <p className="mono" style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                        MULTI-AGENT PIPELINE STATUS // 5 AGENTS ONLINE
-                    </p>
-                </div>
-
-                {/* Pipeline Visualization */}
-                <div className="card" style={{ padding: 0, overflow: "hidden", marginBottom: 24 }}>
-                    <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <h2 style={{ fontSize: 15, fontWeight: 600 }}>Processing Pipeline</h2>
-                        <span className="badge badge-green">SYSTEM ONLINE</span>
+        <div className="flex flex-col h-full bg-paper relative bg-grid-pattern overflow-hidden">
+            {/* HEADER BLOCK */}
+            <header className="h-16 shrink-0 border-b border-ink flex items-center justify-between px-8 bg-paper z-10">
+                <div className="flex items-center gap-6">
+                    <div className="flex flex-col justify-center">
+                        <span className="font-mono text-[10px] text-ink/60 uppercase">Active Process Tracker</span>
+                        <h2 className="font-display font-bold text-xl tracking-tight leading-none mt-0.5">{batchId}</h2>
                     </div>
-                    <div style={{ padding: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 0 }}>
-                        {STAGES.map((stage, i) => (
-                            <div key={stage.key} style={{ display: "flex", alignItems: "center" }}>
-                                {/* Stage card */}
-                                <div
-                                    onClick={() => setSelectedAgent(stage.key)}
-                                    style={{
-                                        padding: "20px 24px",
-                                        borderRadius: "var(--radius-lg)",
-                                        background: selectedAgent === stage.key ? `${stage.color}18` : "var(--bg-surface)",
-                                        border: `1px solid ${selectedAgent === stage.key ? stage.color + "40" : "var(--border)"}`,
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                        transition: "all 0.2s",
-                                        minWidth: 140,
-                                    }}
-                                >
-                                    <div style={{
-                                        width: 48, height: 48, borderRadius: "50%",
-                                        background: `${stage.color}20`, margin: "0 auto 12px",
-                                        display: "flex", alignItems: "center", justifyContent: "center",
-                                    }}>
-                                        <span className="material-icons-outlined" style={{ color: stage.color, fontSize: 24 }}>{stage.icon}</span>
+                    <div className="h-6 w-px bg-ink/20"></div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-mute border border-ink">
+                        <span className="material-symbols-outlined text-[14px]">
+                            {progress.status === 'completed' ? 'check_circle' : 'sync'}
+                        </span>
+                        <span className="font-mono text-xs font-bold uppercase">{progress.percent}% COMPLETE // {progress.status}</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <button className="h-8 px-4 border border-ink bg-ink text-paper hover:bg-primary font-mono text-xs font-bold uppercase transition-colors flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[14px]">download</span>
+                        Export Logs
+                    </button>
+                </div>
+            </header>
+
+            {/* PIPELINE VISUALIZATION (SWIM LANES) */}
+            <div className="flex-1 flex flex-col justify-center px-12 overflow-x-auto relative z-10 min-h-[350px]">
+                <div className="flex items-start gap-0 w-full min-w-[1000px]">
+                    {agentList.map((agent, index) => {
+                        const isLast = index === agentList.length - 1;
+                        const isCompleted = agent.status === 'completed';
+                        const isRunning = agent.status === 'running';
+                        const isPending = agent.status === 'pending' || agent.status === 'idle';
+                        const isError = agent.status === 'error';
+
+                        let shortName = agent.name;
+                        let abbr = `AGN_${shortName.substring(0, 3).toUpperCase()}`;
+
+                        return (
+                            <div key={agent.id} className="flex contents w-full h-full group">
+                                <div className={`flex-1 flex flex-col gap-4 ${isPending ? 'opacity-50' : ''}`}>
+                                    <div className={`relative h-48 p-6 flex flex-col justify-between transition-all duration-500 ${isRunning
+                                        ? 'border-3 border-primary bg-paper shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -translate-y-2'
+                                        : isCompleted
+                                            ? 'border border-ink bg-ink'
+                                            : isError
+                                                ? 'border-2 border-red-500 bg-red-500/10'
+                                                : 'border border-ink bg-mute'
+                                        }`}>
+
+                                        {isRunning && (
+                                            <div className="absolute -top-3 left-4 bg-primary text-paper px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest uppercase animate-pulse">
+                                                EXECUTING
+                                            </div>
+                                        )}
+                                        {isError && (
+                                            <div className="absolute -top-3 left-4 bg-red-500 text-paper px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest uppercase">
+                                                FAILED
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-start">
+                                            <span className={`font-mono text-xs ${isRunning ? 'text-primary font-bold' : isCompleted ? 'text-paper/60' : isError ? 'text-red-500 font-bold' : 'text-ink/60'}`}>
+                                                0{index + 1} // {abbr}
+                                            </span>
+                                            <span className={`material-symbols-outlined ${isRunning ? 'text-primary animate-[spin_3s_linear_infinite]' : isCompleted ? 'text-data-green' : isError ? 'text-red-500' : 'text-ink/40'}`}>
+                                                {isRunning ? 'sync' : isCompleted ? 'check_circle' : isError ? 'error' : 'hourglass_empty'}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h3 className={`font-display text-2xl font-bold mb-1 ${isRunning ? 'text-ink' : isCompleted ? 'text-paper' : isError ? 'text-red-500' : 'text-ink'}`}>
+                                                {shortName}
+                                            </h3>
+                                            <p className={`font-mono text-xs uppercase ${isRunning ? 'text-ink font-bold' : isCompleted ? 'text-paper/80' : isError ? 'text-red-500' : 'text-ink/60'}`}>
+                                                {agent.status}
+                                            </p>
+                                        </div>
+                                        <div className={`w-full h-1 mt-4 relative overflow-hidden ${isRunning ? 'bg-mute' : isCompleted ? 'bg-paper/20' : isError ? 'bg-red-500/20' : 'bg-ink/10'}`}>
+                                            {isRunning && (
+                                                <div className="w-2/3 bg-primary h-full relative overflow-hidden transition-all duration-300">
+                                                    <div className="absolute inset-0 bg-white/30 skew-x-12 -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+                                                </div>
+                                            )}
+                                            {isCompleted && (
+                                                <div className="w-full bg-data-green h-full"></div>
+                                            )}
+                                            {isError && (
+                                                <div className="w-full bg-red-500 h-full"></div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="mono" style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
-                                        {stage.label}
-                                    </div>
-                                    {statusBadge(getStageStatus(stage.key))}
                                 </div>
-                                {/* Arrow connector */}
-                                {i < STAGES.length - 1 && (
-                                    <div style={{ padding: "0 8px", color: "var(--text-muted)" }}>
-                                        <span className="material-icons-outlined" style={{ fontSize: 20 }}>arrow_forward</span>
+
+                                {/* CONNECTOR */}
+                                {!isLast && (
+                                    <div className={`w-12 h-48 flex items-center justify-center relative ${isPending ? 'opacity-50' : ''}`}>
+                                        <div className={`w-full h-px border-t ${isCompleted ? 'bg-ink border-transparent' : 'bg-ink/30 border-dashed border-ink'}`}></div>
+                                        {isCompleted && (
+                                            <span className="material-symbols-outlined absolute text-ink bg-paper p-0.5 z-10 text-[14px]">arrow_forward</span>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                        ))}
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* TERMINAL LOG OUTPUT */}
+            <div className="h-[30%] min-h-[200px] border-t-3 border-ink bg-ink text-paper flex flex-col z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)] shrink-0">
+                <div className="h-10 border-b border-white/20 flex items-center justify-between px-4 bg-[#1a1a1a] shrink-0">
+                    <div className="flex items-center gap-4">
+                        <span className="font-mono text-xs text-primary font-bold flex items-center gap-2">
+                            <span className={`w-2 h-2 ${progress.status === 'processing' ? 'bg-primary animate-pulse' : 'bg-data-green'} rounded-full`}></span>
+                            {progress.status === 'processing' ? 'LIVE STREAM' : 'PIPELINE LOG TRACE'}
+                        </span>
                     </div>
                 </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-                    {/* Agent Detail */}
-                    <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-                        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
-                            <h2 style={{ fontSize: 15, fontWeight: 600 }}>Agent Details</h2>
-                        </div>
-                        <div style={{ padding: 20 }}>
-                            {agents.length === 0 ? (
-                                <div style={{ textAlign: "center", padding: 30, color: "var(--text-muted)" }}>
-                                    <span className="material-icons-outlined" style={{ fontSize: 40, opacity: 0.3 }}>smart_toy</span>
-                                    <p style={{ marginTop: 8 }}>Select an agent from the pipeline above</p>
-                                </div>
-                            ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    {agents.map((agent) => {
-                                        const stageInfo = STAGES.find(s => s.key === agent.id);
-                                        return (
-                                            <div
-                                                key={agent.id}
-                                                onClick={() => setSelectedAgent(agent.id)}
-                                                style={{
-                                                    padding: "14px 16px",
-                                                    borderRadius: "var(--radius-md)",
-                                                    background: selectedAgent === agent.id ? "var(--bg-hover)" : "transparent",
-                                                    border: "1px solid var(--border-subtle)",
-                                                    cursor: "pointer",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: 12,
-                                                    transition: "all 0.15s",
-                                                }}
-                                            >
-                                                <div style={{
-                                                    width: 36, height: 36, borderRadius: "var(--radius-sm)",
-                                                    background: `${stageInfo?.color || "#666"}20`,
-                                                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                                                }}>
-                                                    <span className="material-icons-outlined" style={{ color: stageInfo?.color, fontSize: 18 }}>{stageInfo?.icon}</span>
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: 600, fontSize: 13 }}>{agent.name}</div>
-                                                    <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{agent.description}</div>
-                                                </div>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                    {statusBadge(running === agent.id ? "running" : agent.status)}
-                                                    <button
-                                                        className="btn"
-                                                        style={{ padding: "4px 10px", fontSize: 11 }}
-                                                        onClick={(e) => { e.stopPropagation(); runAgent(agent.id); }}
-                                                        disabled={running === agent.id}
-                                                    >
-                                                        {running === agent.id ? "..." : "Run"}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Outputs */}
-                    <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-                        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
-                            <h2 style={{ fontSize: 15, fontWeight: 600 }}>Agent Outputs</h2>
-                        </div>
-                        <div style={{ padding: 20 }}>
-                            {outputs.length === 0 ? (
-                                <div style={{ textAlign: "center", padding: 30, color: "var(--text-muted)" }}>
-                                    <span className="material-icons-outlined" style={{ fontSize: 40, opacity: 0.3 }}>inventory_2</span>
-                                    <p style={{ marginTop: 8 }}>No outputs available</p>
-                                </div>
-                            ) : outputs.map((out, i) => (
-                                <div key={i} style={{
-                                    padding: "12px 14px", borderRadius: "var(--radius-md)",
-                                    border: "1px solid var(--border-subtle)", marginBottom: 8,
-                                    transition: "all 0.15s",
-                                }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                                        <span className="material-icons-outlined" style={{ fontSize: 18, color: "var(--green)" }}>check_circle</span>
-                                        <span style={{ fontWeight: 600, fontSize: 13 }}>{out.agent.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
-                                        <span className="mono" style={{ fontSize: 10, color: "var(--text-muted)", marginLeft: "auto" }}>
-                                            {(out.size_bytes / 1024).toFixed(1)} KB
-                                        </span>
-                                    </div>
-                                    <div className="mono" style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5, overflow: "hidden", maxHeight: 42 }}>
-                                        {out.preview}
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* Run Result */}
-                            {runResult && (
-                                <div className="card" style={{ marginTop: 12, background: runResult.error ? "var(--red-soft)" : "var(--green-soft)", padding: 14 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, color: runResult.error ? "var(--red)" : "var(--green)" }}>
-                                        {runResult.error ? "Error" : `Agent: ${runResult.agent_id}`}
-                                    </div>
-                                    <div className="mono" style={{ fontSize: 11, color: "var(--text-secondary)", maxHeight: 80, overflow: "auto" }}>
-                                        {runResult.error || JSON.stringify(runResult.result, null, 2)?.slice(0, 300)}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                <div className="flex-1 p-6 font-mono text-xs overflow-y-auto space-y-2">
+                    <div className="flex gap-4 opacity-50">
+                        <span className="text-white/40 w-24 shrink-0">SYS_OUT</span>
+                        <span className="text-data-green">[SYSTEM]</span>
+                        <span>{progress.status === 'completed' ? 'BATCH RUN SUCCESSFULLY FINALIZED' : 'STREAMING RAW PIPELINE LOGS...'}</span>
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+export default function AgentMonitorPage() {
+    return (
+        <DashboardLayout>
+            <Suspense fallback={<div className="p-12 font-mono">Initializing Neural Agent Board...</div>}>
+                <AgentMonitorView />
+            </Suspense>
         </DashboardLayout>
     );
 }

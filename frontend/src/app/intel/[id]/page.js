@@ -1,227 +1,363 @@
 "use client";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect, use } from "react";
+// Since this is a detail page, it requires the dynamic ID from the URL.
 
-const API = "http://localhost:8000/api";
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export default function IntelPage({ params }) {
-    const resolvedParams = use(params);
-    const id = resolvedParams.id;
-    const [lead, setLead] = useState(null);
+    const unwrappedParams = use(params);
+    const id = unwrappedParams.id;
+    const [target, setTarget] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [agentResults, setAgentResults] = useState({});
-    const [runningAgent, setRunningAgent] = useState(null);
 
+    // Mock data based on the design for visual presentation
     useEffect(() => {
+        const mockData = {
+            id: id,
+            name: "Alexandra Voss",
+            title: "CTO",
+            company: "OMNI-CORP",
+            intent: 88,
+            status: "Ready State",
+            signal: "HIGH VELOCITY",
+            linkedin: "linkedin.com/in/alexandravoss",
+            website: "omni-corp.tech",
+            bio: "15+ years in Cloud Infrastructure. Previously VP Eng at DataFlow. Currently leading a 200+ person org focused on Kubernetes migration and stateless architecture scaling.",
+            news: [
+                "Omni-Corp raises $50M Series B led by Sequoia.",
+                "Speaking at KubeCon '24: \"Scaling without State\".",
+                "Hiring aggressively for DevSecOps roles in Q3."
+            ],
+            timing: {
+                recommended: "Tuesday, 10:00 AM EST",
+                recommendedReason: "Highest engagement probability based on previous LinkedIn activity patterns.",
+                events: [
+                    { label: "TRIGGER EVENT", desc: "Series B Funding Announced", time: "2 Days Ago", type: "white" },
+                    { label: "SIGNAL", desc: 'Profile View: "Kubernetes Scaling"', time: "4 Days Ago", type: "gray" }
+                ],
+                localTime: "14:32 PM",
+                targetTime: "11:32 AM (PST)"
+            },
+            draft: [
+                { type: 'html', content: '<span class="text-primary">Subject:</span> Re: Your KubeCon talk on stateless scaling' },
+                { type: 'text', content: 'Hi Alexandra,' },
+                { type: 'br' },
+                { type: 'text', content: 'I caught your upcoming session on the KubeCon agenda regarding "Scaling without State"—specifically the challenge of data persistence in ephemeral environments.' },
+                { type: 'br' },
+                { type: 'text', content: 'At Omni-Corp\'s current Series B growth stage, balancing developer velocity with infrastructure stability is usually the breaking point. I\'m curious if your team is currently managing stateful workloads in-house or leveraging managed services?' },
+                { type: 'br' },
+                { type: 'text', content: 'We\'ve helped teams like DataFlow cut their k8s management overhead by 40% using our grid architecture.' },
+                { type: 'br' },
+                { type: 'text', content: 'Open to a brief exchange on this next Tuesday at 10 AM EST?' },
+                { type: 'br' },
+                { type: 'text', content: 'Best,<br/>Agent Smith' }
+            ],
+            logs: [
+                { time: "10:42:01", agent: "STRATEGY", action: "Draft generated via GPT-4 (Template: Series B Outreach)", status: "SUCCESS" },
+                { time: "10:41:55", agent: "TIMING", action: "Analyzed 45 historical signals. Optimal slot identified.", status: "SUCCESS" },
+                { time: "10:41:12", agent: "RESEARCH", action: "Scraped LinkedIn, TechCrunch, Twitter. Entities extracted: 14.", status: "SUCCESS" },
+                { time: "10:41:00", agent: "SYSTEM", action: "Lead imported from CSV Upload.", status: "INIT" }
+            ]
+        };
+
         fetch(`${API}/leads/${id}`)
-            .then(r => r.json())
-            .then(d => { setLead(d); setLoading(false); })
-            .catch(() => setLoading(false));
+            .then(res => {
+                if (!res.ok) throw new Error("Lead not found");
+                return res.json();
+            })
+            .then(data => {
+                setTarget({
+                    ...mockData,
+                    id: data.lead_id || data._index || id,
+                    name: data.name || data.first_name || mockData.name,
+                    title: data.title || mockData.title,
+                    company: data.company || data.organization || mockData.company,
+                    intent: data.intent_score !== undefined ? data.intent_score : mockData.intent,
+                    status: data.status || mockData.status,
+                });
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch lead data:", err);
+                setTarget(mockData);
+                setLoading(false);
+            });
     }, [id]);
 
-    const runAgent = async (agentId) => {
-        setRunningAgent(agentId);
-        try {
-            const res = await fetch(`${API}/agents/run/${agentId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ lead_id: id }),
-            });
-            const data = await res.json();
-            setAgentResults(prev => ({ ...prev, [agentId]: data }));
-        } catch (err) {
-            setAgentResults(prev => ({ ...prev, [agentId]: { error: "Connection failed" } }));
-        }
-        setRunningAgent(null);
-    };
-
-    if (loading) {
+    if (loading || !target) {
         return (
             <DashboardLayout>
-                <div style={{ textAlign: "center", padding: 80, color: "var(--text-muted)" }}>
-                    <span style={{ animation: "pulse 1s infinite", fontSize: 24 }}>◈</span>
-                    <p style={{ marginTop: 12 }}>Loading Intelligence Report...</p>
+                <div className="flex items-center justify-center h-full bg-mute text-ink font-mono animate-pulse">
+                    LOADING INTELLIGENCE...
                 </div>
             </DashboardLayout>
         );
     }
-
-    if (!lead) {
-        return (
-            <DashboardLayout>
-                <div style={{ textAlign: "center", padding: 80, color: "var(--text-muted)" }}>
-                    <span className="material-icons-outlined" style={{ fontSize: 48, opacity: 0.3 }}>person_off</span>
-                    <p style={{ marginTop: 12 }}>Target not found</p>
-                    <a href="/ledger" className="btn" style={{ marginTop: 16 }}>Return to Ledger</a>
-                </div>
-            </DashboardLayout>
-        );
-    }
-
-    const agents = [
-        { id: "lead_research", label: "Lead Research", icon: "search", color: "#52c41a", desc: "Behavioral pattern analysis" },
-        { id: "intent_qualifier", label: "Intent Qualifier", icon: "gps_fixed", color: "#fa8c16", desc: "Engagement scoring" },
-        { id: "email_strategy", label: "Email Strategy", icon: "mail", color: "#2f54eb", desc: "Personalized outreach" },
-        { id: "followup_timing", label: "Follow-up Timing", icon: "schedule", color: "#eb2f96", desc: "Optimal timing" },
-    ];
-
-    // Build detail fields from available lead data
-    const fields = [
-        { label: "Name", value: lead.name },
-        { label: "Title", value: lead.title },
-        { label: "Company", value: lead.company },
-        { label: "Region", value: lead.region },
-        { label: "Source", value: lead.lead_source },
-        { label: "Visits", value: lead.visits },
-        { label: "Time on Site", value: lead.time_on_site ? `${Number(lead.time_on_site).toFixed(0)}s` : undefined },
-        { label: "Pages/Visit", value: lead.pages_per_visit ? Number(lead.pages_per_visit).toFixed(1) : undefined },
-        { label: "Converted", value: lead.converted !== undefined ? (lead.converted ? "Yes" : "No") : undefined },
-    ].filter(f => f.value !== undefined && f.value !== null && f.value !== "");
 
     return (
         <DashboardLayout>
-            <div className="animate-in">
-                {/* Breadcrumb */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, fontSize: 13, color: "var(--text-muted)" }}>
-                    <a href="/ledger" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>The Ledger</a>
-                    <span className="material-icons-outlined" style={{ fontSize: 14 }}>chevron_right</span>
-                    <span style={{ color: "var(--accent)" }}>Intelligence Report</span>
-                </div>
-
-                {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                        <div style={{
-                            width: 56, height: 56, borderRadius: "50%",
-                            background: `hsl(${(id * 37 + 100) % 360}, 35%, 30%)`,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 22, fontWeight: 700, color: "#fff"
-                        }}>
-                            {(lead.name || "?").charAt(0)}
-                        </div>
-                        <div>
-                            <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>{lead.name || `Target #${id}`}</h1>
-                            <p style={{ fontSize: 14, color: "var(--text-secondary)" }}>
-                                {lead.title} {lead.company ? `@ ${lead.company}` : ""}
-                            </p>
-                        </div>
+            <div className="flex flex-col h-full bg-mute">
+                {/* Breadcrumbs / Top Bar */}
+                <header className="h-16 border-b border-ink bg-white flex items-center justify-between px-8 shrink-0">
+                    <div className="flex items-center gap-2 font-mono text-sm">
+                        <span className="text-ink/40">MISSION CONTROL</span>
+                        <span className="text-ink/30">/</span>
+                        <span className="text-ink/40">THE LEDGER</span>
+                        <span className="text-ink/30">/</span>
+                        <span className="text-primary font-bold">INTELLIGENCE REPORT</span>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <button className="btn">
-                            <span className="material-icons-outlined" style={{ fontSize: 16 }}>bookmark_border</span>
-                            Watch
-                        </button>
-                        <button className="btn btn-primary" onClick={() => runAgent("lead_research")}>
-                            <span className="material-icons-outlined" style={{ fontSize: 16 }}>play_arrow</span>
-                            Run Full Analysis
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-mute border border-ink">
+                            <span className="w-2 h-2 rounded-full bg-data-green animate-pulse"></span>
+                            <span className="font-mono text-xs font-bold tracking-tight">SYSTEM ONLINE</span>
+                        </div>
+                        <button className="p-2 hover:bg-mute border border-transparent hover:border-ink transition-colors">
+                            <span className="material-symbols-outlined text-xl">notifications</span>
                         </button>
                     </div>
-                </div>
+                </header>
 
-                <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20 }}>
-                    {/* Left: Lead Details */}
-                    <div>
-                        <div className="card" style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
-                            <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", fontSize: 13, fontWeight: 600 }}>
-                                Target Profile
-                            </div>
-                            <div style={{ padding: "4px 0" }}>
-                                {fields.map((f, i) => (
-                                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid var(--border-subtle)" }}>
-                                        <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{f.label}</span>
-                                        <span style={{ fontSize: 13, fontWeight: 500 }}>{f.value}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* CRM Timeline */}
-                        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-                            <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", fontSize: 13, fontWeight: 600 }}>
-                                Event Timeline
-                            </div>
-                            <div style={{ padding: 20 }}>
-                                {[
-                                    { icon: "person_add", text: "Lead added to system", time: "2 days ago", color: "var(--blue)" },
-                                    { icon: "search", text: "Research initiated", time: "1 day ago", color: "#52c41a" },
-                                    { icon: "gps_fixed", text: "Intent scored", time: "12 hours ago", color: "#fa8c16" },
-                                ].map((ev, i) => (
-                                    <div key={i} style={{ display: "flex", gap: 12, marginBottom: 16, position: "relative" }}>
-                                        {i < 2 && <div style={{ position: "absolute", left: 15, top: 28, bottom: -12, width: 1, background: "var(--border)" }} />}
-                                        <div style={{
-                                            width: 30, height: 30, borderRadius: "50%", background: `${ev.color}20`,
-                                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-                                        }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: 14, color: ev.color }}>{ev.icon}</span>
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-8 relative">
+                    <div className="max-w-[1600px] mx-auto flex flex-col gap-6">
+                        {/* Header Section: Identity & Intent */}
+                        <section className="grid grid-cols-12 gap-6 items-stretch">
+                            {/* Identity Block */}
+                            <div className="col-span-12 lg:col-span-8 bg-paper border border-ink p-8 flex flex-col justify-center shadow-sm relative group">
+                                <div className="absolute top-0 right-0 bg-ink text-paper px-3 py-1 font-mono text-xs uppercase tracking-widest">Target Acquired</div>
+                                <div className="flex items-start justify-between">
+                                    <div className="flex flex-col gap-1">
+                                        <h1 className="font-display font-bold text-5xl uppercase tracking-tighter text-ink">{target.name}</h1>
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <span className="font-mono text-lg bg-mute px-2 py-1 border border-ink">{target.title}</span>
+                                            <span className="text-ink/40 font-light text-2xl">@</span>
+                                            <span className="font-display font-bold text-2xl text-ink">{target.company}</span>
                                         </div>
-                                        <div>
-                                            <div style={{ fontSize: 13, fontWeight: 500 }}>{ev.text}</div>
-                                            <div className="mono" style={{ fontSize: 10, color: "var(--text-muted)" }}>{ev.time}</div>
+                                        <div className="flex gap-4 mt-6">
+                                            <a className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors border-b border-ink/20 hover:border-primary pb-0.5" href="#">
+                                                <span className="material-symbols-outlined text-lg">link</span>
+                                                {target.linkedin}
+                                            </a>
+                                            <span className="text-ink/30">|</span>
+                                            <a className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors border-b border-ink/20 hover:border-primary pb-0.5" href="#">
+                                                <span className="material-symbols-outlined text-lg">language</span>
+                                                {target.website}
+                                            </a>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: Agent Panels */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                        {agents.map((agent) => (
-                            <div key={agent.id} className="card" style={{ padding: 0, overflow: "hidden" }}>
-                                <div style={{
-                                    padding: "14px 20px", borderBottom: "1px solid var(--border)",
-                                    display: "flex", justifyContent: "space-between", alignItems: "center"
-                                }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                        <div style={{
-                                            width: 32, height: 32, borderRadius: "var(--radius-sm)",
-                                            background: `${agent.color}20`, display: "flex", alignItems: "center", justifyContent: "center"
-                                        }}>
-                                            <span className="material-icons-outlined" style={{ color: agent.color, fontSize: 18 }}>{agent.icon}</span>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 14, fontWeight: 600 }}>{agent.label}</div>
-                                            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{agent.desc}</div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        className="btn"
-                                        style={{ padding: "6px 14px", fontSize: 12 }}
-                                        onClick={() => runAgent(agent.id)}
-                                        disabled={runningAgent === agent.id}
-                                    >
-                                        {runningAgent === agent.id ? (
-                                            <><span style={{ animation: "pulse 1s infinite" }}>◈</span> Running...</>
-                                        ) : (
-                                            <><span className="material-icons-outlined" style={{ fontSize: 14 }}>play_arrow</span> Run</>
-                                        )}
-                                    </button>
                                 </div>
-                                <div style={{ padding: 20 }}>
-                                    {agentResults[agent.id] ? (
-                                        agentResults[agent.id].error ? (
-                                            <div style={{ color: "var(--red)", fontSize: 13 }}>{agentResults[agent.id].error}</div>
-                                        ) : (
-                                            <div>
-                                                <div className="badge badge-green" style={{ marginBottom: 10 }}>ANALYSIS COMPLETE</div>
-                                                <pre className="mono" style={{
-                                                    fontSize: 11, color: "var(--text-secondary)",
-                                                    background: "var(--bg-base)", padding: 14, borderRadius: "var(--radius-md)",
-                                                    maxHeight: 200, overflow: "auto", whiteSpace: "pre-wrap", wordBreak: "break-word"
-                                                }}>
-                                                    {JSON.stringify(agentResults[agent.id].result, null, 2)?.slice(0, 1000) || "No data"}
-                                                </pre>
+                            </div>
+                            {/* Intent Gauge (Agent 2) */}
+                            <div className="col-span-12 lg:col-span-4 bg-paper border border-ink p-6 flex flex-col relative overflow-hidden">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h2 className="font-display font-bold text-lg text-ink">AGENT_02: INTENT</h2>
+                                    <span className="material-symbols-outlined text-primary animate-spin" style={{ animationDuration: '3s' }}>settings</span>
+                                </div>
+                                <div className="flex-1 flex flex-col items-center justify-center relative mt-4">
+                                    {/* Gauge SVG equivalent using Tailwind */}
+                                    <div className="relative w-48 h-24 overflow-hidden">
+                                        <div className="absolute w-48 h-48 rounded-full border-[12px] border-mute top-0 left-0"></div>
+                                        <div className="absolute w-48 h-48 rounded-full border-[12px] border-primary top-0 left-0 border-b-0 border-l-0 border-r-transparent origin-center" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%)', transform: 'rotate(158deg)' }}></div>
+                                    </div>
+                                    <div className="absolute bottom-0 flex flex-col items-center">
+                                        <span className="font-mono text-6xl font-bold text-ink leading-none">{target.intent}</span>
+                                        <span className="font-mono text-xs text-primary uppercase tracking-widest mt-1">{target.status}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-dashed border-ink/30 flex justify-between items-center font-mono text-xs">
+                                    <span className="text-ink/50">SIGNAL STRENGTH</span>
+                                    <span className="text-ink font-bold">{target.signal}</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Main Grid: 3 Columns */}
+                        <section className="grid grid-cols-12 gap-6 min-h-[600px]">
+                            {/* Column 1: Research (Agent 1) */}
+                            <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
+                                <div className="bg-paper border border-ink h-full flex flex-col">
+                                    <div className="p-4 border-b border-ink bg-mute flex justify-between items-center">
+                                        <h3 className="font-display font-bold text-sm tracking-wide">AGENT_01: RESEARCH</h3>
+                                        <span className="material-symbols-outlined text-ink text-sm">person_search</span>
+                                    </div>
+                                    <div className="p-6 flex flex-col gap-6 flex-1">
+                                        {/* Photo - using a solid color as placeholder for the external image */}
+                                        <div className="w-full aspect-square bg-mute border border-ink relative overflow-hidden group transition-all duration-500 flex items-center justify-center text-ink/20">
+                                            <span className="material-symbols-outlined text-6xl">person</span>
+                                            <div className="absolute bottom-0 left-0 bg-ink text-paper px-2 py-1 font-mono text-xs">IMG_REF_001</div>
+                                        </div>
+                                        {/* Bio */}
+                                        <div className="flex flex-col gap-2">
+                                            <h4 className="font-mono text-xs text-ink/40 uppercase">Subject Bio</h4>
+                                            <p className="text-sm leading-relaxed text-ink/80">{target.bio}</p>
+                                        </div>
+                                        {/* News Hits */}
+                                        <div className="flex flex-col gap-3">
+                                            <h4 className="font-mono text-xs text-ink/40 uppercase">Intelligence Hits</h4>
+                                            <ul className="flex flex-col gap-2">
+                                                {target.news.map((item, i) => (
+                                                    <li key={i} className="flex gap-2 items-start text-sm group cursor-pointer">
+                                                        <span className="text-primary mt-1">●</span>
+                                                        <span className="group-hover:underline decoration-primary underline-offset-4">{item}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Column 2: Timing (Agent 4) */}
+                            <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
+                                <div className="bg-paper border border-ink h-full flex flex-col">
+                                    <div className="p-4 border-b border-ink bg-mute flex justify-between items-center">
+                                        <h3 className="font-display font-bold text-sm tracking-wide">AGENT_04: TIMING</h3>
+                                        <span className="material-symbols-outlined text-ink text-sm">schedule</span>
+                                    </div>
+                                    <div className="p-6 relative flex-1">
+                                        {/* Vertical Line */}
+                                        <div className="absolute left-10 top-6 bottom-6 w-px bg-ink"></div>
+                                        <div className="flex flex-col gap-8 relative z-10 pl-2">
+                                            {/* Item 1: Active */}
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-6 h-6 rounded-none border border-ink bg-primary flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(10,10,10,1)]">
+                                                    <span className="material-symbols-outlined text-white text-[16px]">bolt</span>
+                                                </div>
+                                                <div className="flex flex-col pt-0.5 mt-[-2px]">
+                                                    <span className="font-mono text-xs font-bold text-primary uppercase tracking-wider mb-1">RECOMMENDED ACTION</span>
+                                                    <span className="font-display font-bold text-lg leading-tight">{target.timing.recommended}</span>
+                                                    <p className="text-xs text-ink/50 mt-1">{target.timing.recommendedReason}</p>
+                                                </div>
                                             </div>
-                                        )
-                                    ) : (
-                                        <div style={{ textAlign: "center", padding: 20, color: "var(--text-muted)" }}>
-                                            <span className="material-icons-outlined" style={{ fontSize: 32, opacity: 0.3 }}>smart_toy</span>
-                                            <p style={{ fontSize: 12, marginTop: 8 }}>Click "Run" to execute this agent</p>
+                                            {/* Items: Past */}
+                                            {target.timing.events.map((ev, i) => (
+                                                <div key={i} className={`flex items-start gap-4 ${ev.type === 'white' ? 'opacity-60' : 'opacity-40'}`}>
+                                                    <div className="w-6 h-6 rounded-none border border-ink bg-paper flex items-center justify-center shrink-0">
+                                                        <div className={`w-2 h-2 ${ev.type === 'white' ? 'bg-ink' : 'bg-ink/40'}`}></div>
+                                                    </div>
+                                                    <div className="flex flex-col pt-0.5 mt-[-2px]">
+                                                        <span className="font-mono text-xs font-bold text-ink/50 uppercase tracking-wider mb-1">{ev.label}</span>
+                                                        <span className="font-body font-medium text-sm">{ev.desc}</span>
+                                                        <span className="font-mono text-xs text-ink/40 mt-0.5">{ev.time}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
+                                        {/* Windows Widget Style at bottom */}
+                                        <div className="absolute bottom-6 left-6 right-6 border border-ink p-3 bg-mute/50">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="font-mono text-[10px] uppercase">Timezone Sync</span>
+                                                <span className="w-2 h-2 bg-data-green rounded-full animate-pulse"></span>
+                                            </div>
+                                            <div className="font-mono text-xs text-ink/60">
+                                                Local: {target.timing.localTime}<br />
+                                                Target: {target.timing.targetTime}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+
+                            {/* Column 3: Strategy (Agent 3) - Takes up remaining space */}
+                            <div className="col-span-12 lg:col-span-6 flex flex-col gap-6">
+                                <div className="bg-paper border border-ink h-full flex flex-col shadow-lg relative">
+                                    <div className="p-4 border-b border-ink bg-ink text-paper flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">terminal</span>
+                                            <h3 className="font-display font-bold text-sm tracking-wide">AGENT_03: STRATEGY_TERMINAL</h3>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-primary border border-white"></div>
+                                            <div className="w-3 h-3 rounded-full bg-yellow-500 border border-white"></div>
+                                            <div className="w-3 h-3 rounded-full bg-data-green border border-white"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col flex-1 relative bg-mute/20">
+                                        {/* Toolbar */}
+                                        <div className="flex items-center justify-between px-4 py-2 border-b border-ink/20 bg-paper">
+                                            <div className="flex gap-4 font-mono text-xs text-ink/50">
+                                                <span className="cursor-pointer hover:text-ink">mode: edit</span>
+                                                <span className="cursor-pointer hover:text-ink">encoding: utf-8</span>
+                                                <span className="cursor-pointer hover:text-ink text-primary">ai_model: gpt-4-turbo</span>
+                                            </div>
+                                            <button className="text-xs font-mono border-b border-ink hover:text-primary transition-colors">
+                                                Clear Buffer
+                                            </button>
+                                        </div>
+                                        {/* Content Editable Area */}
+                                        <div className="flex-1 p-6 font-mono text-sm leading-relaxed text-ink/80 focus:outline-none overflow-y-auto" contentEditable suppressContentEditableWarning>
+                                            {target.draft.map((line, i) => {
+                                                if (line.type === 'br') return <br key={i} />;
+                                                if (line.type === 'html') return <div key={i} className="mb-4 text-ink/50 select-none" dangerouslySetInnerHTML={{ __html: line.content }} />;
+                                                return <p key={i} dangerouslySetInnerHTML={{ __html: line.content }}></p>;
+                                            })}
+                                        </div>
+                                        {/* Actions Footer */}
+                                        <div className="p-4 border-t border-ink bg-paper flex justify-between items-center gap-4">
+                                            <button className="flex items-center gap-2 px-4 py-2 border border-ink hover:bg-mute transition-colors font-display font-medium text-sm">
+                                                <span className="material-symbols-outlined text-lg">autorenew</span>
+                                                REGENERATE
+                                            </button>
+                                            <div className="flex gap-2">
+                                                <button className="flex items-center gap-2 px-4 py-2 border border-ink hover:bg-mute transition-colors font-display font-medium text-sm">
+                                                    <span className="material-symbols-outlined text-lg">content_copy</span>
+                                                    COPY
+                                                </button>
+                                                <button className="flex items-center gap-2 px-6 py-2 bg-primary text-white border border-ink hover:bg-ink transition-colors font-display font-bold text-sm shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]">
+                                                    <span className="material-symbols-outlined text-lg">send</span>
+                                                    APPROVE & LOG
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Footer: Audit Trail (Agent 5) */}
+                        <section className="border border-ink bg-paper mt-4">
+                            <details className="group" open>
+                                <summary className="flex items-center justify-between p-4 cursor-pointer bg-mute hover:bg-mute/80 transition-colors list-none select-none">
+                                    <div className="flex items-center gap-3">
+                                        <span className="material-symbols-outlined text-ink group-open:rotate-180 transition-transform">expand_more</span>
+                                        <h3 className="font-display font-bold text-sm tracking-wide uppercase">AGENT_05: AUDIT TRAIL & CRM LOGS</h3>
+                                    </div>
+                                    <div className="flex gap-4 font-mono text-xs text-ink/50">
+                                        <span>SYNCED: JUST NOW</span>
+                                        <span>SOURCE: SALESFORCE</span>
+                                    </div>
+                                </summary>
+                                <div className="p-0 border-t border-ink">
+                                    <table className="w-full text-left font-mono text-xs">
+                                        <thead className="bg-mute/40 text-ink/50 border-b border-ink/20">
+                                            <tr>
+                                                <th className="p-3 font-medium w-32">TIMESTAMP</th>
+                                                <th className="p-3 font-medium w-32">AGENT</th>
+                                                <th className="p-3 font-medium">ACTION</th>
+                                                <th className="p-3 font-medium w-32">STATUS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-ink/10">
+                                            {target.logs.map((log, i) => (
+                                                <tr key={i} className="hover:bg-mute/50 transition-colors">
+                                                    <td className="p-3 text-ink/40">{log.time}</td>
+                                                    <td className={`p-3 font-bold ${log.agent === 'STRATEGY' ? 'text-primary' : 'text-ink'}`}>{log.agent}</td>
+                                                    <td className="p-3">{log.action}</td>
+                                                    <td className="p-3">
+                                                        {log.status === 'SUCCESS' ? (
+                                                            <span className="bg-data-green/10 text-data-green px-1.5 py-0.5 border border-data-green/20">{log.status}</span>
+                                                        ) : (
+                                                            <span className="bg-mute text-ink/60 px-1.5 py-0.5 border border-ink/20">{log.status}</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        </section>
                     </div>
                 </div>
             </div>

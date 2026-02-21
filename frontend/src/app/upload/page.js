@@ -1,202 +1,177 @@
 "use client";
 import DashboardLayout from "@/components/DashboardLayout";
-import { useState, useRef } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { uploadBatch } from "@/api/batch";
+import { BatchFileInput } from "@/components/BatchFileInput";
+import { useBatchProgress } from "@/hooks/useBatchProgress";
 
-const API = "http://localhost:8000/api";
+export default function UploadProtocolPage() {
+    const [files, setFiles] = useState({});
+    const [uploadStatus, setUploadStatus] = useState("idle"); // idle, uploading, success, error
+    const [uploadResult, setUploadResult] = useState(null);
+    const router = useRouter();
 
-export default function UploadPage() {
-    const [dragActive, setDragActive] = useState(false);
-    const [file, setFile] = useState(null);
-    const [uploading, setUploading] = useState(false);
-    const [result, setResult] = useState(null);
-    const [error, setError] = useState("");
-    const inputRef = useRef(null);
+    const progress = useBatchProgress(uploadResult?.batch_id);
 
-    const handleDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-        else if (e.type === "dragleave") setDragActive(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-        const dropped = e.dataTransfer?.files?.[0];
-        if (dropped && dropped.name.endsWith(".csv")) {
-            setFile(dropped);
-            setError("");
-        } else {
-            setError("Only CSV files are accepted.");
-        }
-    };
-
-    const handleSelect = (e) => {
-        const selected = e.target.files?.[0];
-        if (selected) {
-            setFile(selected);
-            setError("");
-        }
-    };
+    // The form is only ready to upload when all 5 files are populated
+    const ready =
+        files.agentMapping &&
+        files.crmPipeline &&
+        files.emailLogs &&
+        files.leadsData &&
+        files.salesPipeline;
 
     const handleUpload = async () => {
-        if (!file) return;
-        setUploading(true);
-        setError("");
-        setResult(null);
-
-        const formData = new FormData();
-        formData.append("file", file);
+        if (!ready) return;
+        setUploadStatus("uploading");
 
         try {
-            const res = await fetch(`${API}/leads/upload`, { method: "POST", body: formData });
-            const data = await res.json();
-            if (res.ok) {
-                setResult(data);
-            } else {
-                setError(data.detail || "Upload failed");
-            }
+            const result = await uploadBatch(files);
+            setUploadResult(result);
+            setUploadStatus("success");
+
+            // Redirect smoothly to the Agent Monitor so they can watch the pipeline
+            setTimeout(() => {
+                router.push(`/agents?batch=${result.batch_id}`);
+            }, 1800);
         } catch (err) {
-            setError("Connection failed. Is the backend running?");
+            console.error(err);
+            setUploadStatus("error");
         }
-        setUploading(false);
     };
 
     return (
         <DashboardLayout>
-            <div className="animate-in">
-                <div style={{ marginBottom: 28 }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Upload Protocol</h1>
-                    <p className="mono" style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                        SECURE DATA INGESTION INTERFACE // V.2.4
-                    </p>
-                </div>
-
-                <div style={{ maxWidth: 680, margin: "0 auto" }}>
-                    {/* Drop Zone */}
-                    <div
-                        className="card"
-                        onDragEnter={handleDrag}
-                        onDragOver={handleDrag}
-                        onDragLeave={handleDrag}
-                        onDrop={handleDrop}
-                        onClick={() => inputRef.current?.click()}
-                        style={{
-                            textAlign: "center",
-                            padding: "60px 40px",
-                            cursor: "pointer",
-                            border: dragActive ? "2px dashed var(--accent)" : "2px dashed var(--border)",
-                            background: dragActive ? "var(--accent-soft)" : "var(--bg-card)",
-                            transition: "all 0.2s",
-                        }}
-                    >
-                        <input ref={inputRef} type="file" accept=".csv" onChange={handleSelect} hidden />
-                        <span className="material-icons-outlined" style={{ fontSize: 56, color: dragActive ? "var(--accent)" : "var(--text-muted)", marginBottom: 16 }}>
-                            cloud_upload
-                        </span>
-                        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
-                            Drop Tactical Data (CSV)
-                        </h3>
-                        <p style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-                            Drag and drop your CSV file here, or click to browse
-                        </p>
-                        <div className="mono" style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 12 }}>
-                            Max Payload: 25MB // Schema: V4.0
+            <div className="flex flex-col h-full bg-paper relative bg-grid-pattern overflow-hidden">
+                {/* Top Navigation */}
+                <header className="flex items-center justify-between whitespace-nowrap border-b border-ink bg-paper px-6 py-4 z-20 shrink-0">
+                    <div className="flex items-center gap-4">
+                        <div className="size-6 bg-ink text-paper flex items-center justify-center">
+                            <span className="material-symbols-outlined text-sm">grid_view</span>
                         </div>
+                        <h2 className="text-ink text-xl font-display font-bold leading-none tracking-[-0.02em] uppercase">STRATEGIC GRID // TERMINAL</h2>
                     </div>
+                </header>
 
-                    {/* Selected file */}
-                    {file && !result && (
-                        <div className="card" style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 14 }}>
-                            <div style={{
-                                width: 44, height: 44, borderRadius: "var(--radius-md)",
-                                background: "var(--green-soft)", display: "flex", alignItems: "center", justifyContent: "center"
-                            }}>
-                                <span className="material-icons-outlined" style={{ color: "var(--green)", fontSize: 22 }}>description</span>
+                {/* Main Content Area */}
+                <main className="flex-1 relative w-full h-full flex items-center justify-center p-4 md:p-8 overflow-y-auto">
+                    {/* Modal Overlay Container */}
+                    <div className="relative w-full max-w-[800px] bg-paper border-[3px] border-ink shadow-[8px_8px_0px_0px_rgba(10,10,10,1)] flex flex-col">
+
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between border-b border-ink p-6 bg-ink text-paper shrink-0">
+                            <div className="flex flex-col gap-1">
+                                <h1 className="font-display text-3xl font-bold tracking-tight uppercase leading-none">Batch Run Protocol // V.3.0</h1>
+                                <p className="font-mono text-xs text-paper/70 uppercase tracking-widest">Enterprise Atomic Ingestion Interface</p>
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: 600, fontSize: 14 }}>{file.name}</div>
-                                <div className="mono" style={{ fontSize: 11, color: "var(--text-muted)" }}>
-                                    {(file.size / 1024).toFixed(1)} KB
-                                </div>
-                            </div>
-                            <button className="btn" onClick={() => { setFile(null); setResult(null); }} style={{ padding: "6px 12px" }}>
-                                <span className="material-icons-outlined" style={{ fontSize: 16 }}>close</span>
-                            </button>
-                            <button className="btn btn-primary" onClick={handleUpload} disabled={uploading} style={{ padding: "10px 20px" }}>
-                                {uploading ? (
-                                    <><span style={{ animation: "pulse 1s infinite" }}>◈</span> Processing...</>
-                                ) : (
-                                    <><span className="material-icons-outlined" style={{ fontSize: 16 }}>upload</span> Upload</>
-                                )}
+                            <button className="hover:bg-primary/20 p-2 transition-colors border border-transparent hover:border-paper/50 group">
+                                <span className="material-symbols-outlined text-paper group-hover:text-primary transition-colors">close</span>
                             </button>
                         </div>
-                    )}
 
-                    {/* Error */}
-                    {error && (
-                        <div className="card" style={{ marginTop: 16, background: "var(--red-soft)", borderColor: "var(--red)" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--red)" }}>
-                                <span className="material-icons-outlined" style={{ fontSize: 20 }}>error</span>
-                                <span style={{ fontSize: 13 }}>{error}</span>
+                        {/* Modal Body: Scrollable */}
+                        <div className="overflow-y-auto p-8 flex flex-col gap-8 flex-1">
+                            {/* File Inputs List */}
+                            <div className="flex flex-col gap-4">
+                                <div className="mb-2">
+                                    <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-ink border-l-4 border-primary pl-3">Required Payloads</h3>
+                                    <p className="font-mono text-xs text-ink/60 mt-2">All 5 structural schemas must be provided for the pipeline execution to unlock.</p>
+                                </div>
+                                <BatchFileInput label="Agent Mappings" fileKey="agentMapping" files={files} setFiles={setFiles} />
+                                <BatchFileInput label="CRM Pipeline" fileKey="crmPipeline" files={files} setFiles={setFiles} />
+                                <BatchFileInput label="Email Logs" fileKey="emailLogs" files={files} setFiles={setFiles} />
+                                <BatchFileInput label="Leads Data" fileKey="leadsData" files={files} setFiles={setFiles} />
+                                <BatchFileInput label="Sales Pipeline" fileKey="salesPipeline" files={files} setFiles={setFiles} />
                             </div>
-                        </div>
-                    )}
 
-                    {/* Result */}
-                    {result && (
-                        <div className="card" style={{ marginTop: 16, borderColor: "var(--green)", background: "var(--green-soft)" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                                <span className="material-icons-outlined" style={{ color: "var(--green)", fontSize: 22 }}>check_circle</span>
-                                <span style={{ fontWeight: 600, color: "var(--green)", fontSize: 15 }}>Upload Successful</span>
-                            </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                                <div style={{ padding: 12, background: "rgba(0,0,0,0.2)", borderRadius: "var(--radius-md)" }}>
-                                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" }}>File</div>
-                                    <div className="mono" style={{ fontSize: 14, marginTop: 4 }}>{result.filename}</div>
+                            {/* Helper / Log Output */}
+                            <div className="bg-ink text-paper p-4 font-mono text-xs leading-relaxed border-t-2 border-primary">
+                                <div className="flex gap-2">
+                                    <span className="text-primary">&gt;&gt;&gt;</span>
+                                    <span className={ready ? 'text-data-green' : 'text-paper'}>
+                                        {ready ? 'ALL REQUIREMENTS MET. PIPELINE UNLOCKED.' : 'AWAITING PAYLOADS...'}
+                                    </span>
                                 </div>
-                                <div style={{ padding: 12, background: "rgba(0,0,0,0.2)", borderRadius: "var(--radius-md)" }}>
-                                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" }}>Rows Ingested</div>
-                                    <div className="mono" style={{ fontSize: 14, marginTop: 4 }}>{result.rows?.toLocaleString()}</div>
-                                </div>
-                            </div>
-                            {result.columns && (
-                                <div style={{ marginTop: 12, padding: 12, background: "rgba(0,0,0,0.2)", borderRadius: "var(--radius-md)" }}>
-                                    <div style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", marginBottom: 6 }}>Detected Schema</div>
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                                        {result.columns.map((col, i) => (
-                                            <span key={i} className="badge badge-blue">{col}</span>
-                                        ))}
+                                {uploadStatus === 'uploading' && (
+                                    <div className="flex gap-2 text-primary">
+                                        <span className="text-primary">&gt;&gt;&gt;</span>
+                                        <span className="animate-pulse">TRANSFERRING TO BACKEND CLUSTER...</span>
                                     </div>
+                                )}
+                                {uploadStatus === 'success' && uploadResult && (
+                                    <div className="flex gap-2 text-data-green">
+                                        <span className="text-data-green">&gt;&gt;&gt;</span>
+                                        <span>INITIALIZED: BATCH ID [{uploadResult.batch_id}] GENERATED.</span>
+                                    </div>
+                                )}
+                                {progress && (
+                                    <div className="flex gap-2 text-primary mt-2">
+                                        <span className="text-primary">&gt;&gt;&gt;</span>
+                                        <span className="animate-pulse">STATUS: {progress.status.toUpperCase()} ({progress.percent}%)</span>
+                                    </div>
+                                )}
+                                {uploadStatus === 'success' && (
+                                    <div className="flex gap-2 text-white/50 mt-2">
+                                        <span className="text-white/50">&gt;&gt;&gt;</span>
+                                        <span>HANDING OFF TO AGENT MONITOR STREAM...</span>
+                                    </div>
+                                )}
+                                {uploadStatus === 'error' && (
+                                    <div className="flex gap-2 text-red-500">
+                                        <span className="text-red-500">&gt;&gt;&gt;</span>
+                                        <span>ERROR: TRANSMISSION REJECTED. CHECK SYSTEM LOGS.</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer: Actions */}
+                        <div className="p-6 border-t border-ink bg-paper flex items-center justify-between gap-6 shrink-0 z-20">
+                            <div className="flex flex-col gap-1">
+                                <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">Execution Status</span>
+                                <div className="flex items-center gap-2">
+                                    <div className={`size-2 rounded-full ${uploadStatus === 'success' ? 'bg-data-green' : uploadStatus === 'uploading' ? 'bg-primary' : ready ? 'bg-data-green animate-pulse' : 'bg-ink/40'}`}></div>
+                                    <span className={`font-display font-bold text-sm uppercase ${uploadStatus === 'success' ? 'text-data-green' : uploadStatus === 'uploading' ? 'text-primary' : 'text-ink/60'}`}>
+                                        {uploadStatus === 'success' ? 'Batch Stored Successfully' : uploadStatus === 'uploading' ? 'Processing...' : ready ? 'Ready for Execution' : 'Requirements Pending'}
+                                    </span>
                                 </div>
-                            )}
-                            <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-                                <a href="/ledger" className="btn btn-primary" style={{ flex: 1, justifyContent: "center" }}>
-                                    <span className="material-icons-outlined" style={{ fontSize: 16 }}>table_chart</span> View in Ledger
-                                </a>
-                                <button className="btn" onClick={() => { setFile(null); setResult(null); }} style={{ flex: 1, justifyContent: "center" }}>
-                                    <span className="material-icons-outlined" style={{ fontSize: 16 }}>cloud_upload</span> Upload Another
+                            </div>
+                            <div className="flex gap-4 w-full max-w-md justify-end">
+                                <button
+                                    onClick={() => {
+                                        setFiles({});
+                                        setUploadStatus("idle");
+                                    }}
+                                    className="px-6 py-3 border border-ink text-ink font-display font-bold uppercase text-sm hover:bg-mute transition-colors"
+                                >
+                                    Reset
+                                </button>
+                                {/* Form Submit Button */}
+                                <button
+                                    onClick={handleUpload}
+                                    disabled={!ready || uploadStatus === 'uploading'}
+                                    className={`flex-1 px-8 py-3 font-display font-bold uppercase text-sm flex items-center justify-center gap-2 transition-all ${!ready || uploadStatus === 'uploading'
+                                        ? 'bg-mute text-ink/40 border-ink/20 cursor-not-allowed'
+                                        : uploadStatus === 'success'
+                                            ? 'bg-data-green text-white border-data-green shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]'
+                                            : 'bg-primary text-white border-ink hover:bg-ink hover:shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]'
+                                        }`}
+                                >
+                                    <span>
+                                        {uploadStatus === 'uploading' ? 'PROCESSING...'
+                                            : uploadStatus === 'success' ? 'EXECUTION COMPLETE'
+                                                : 'EXECUTE BATCH RUN'}
+                                    </span>
+                                    <span className="material-symbols-outlined text-base">
+                                        {!ready ? 'lock' : uploadStatus === 'success' ? 'check_circle' : uploadStatus === 'uploading' ? 'sync' : 'rocket_launch'}
+                                    </span>
                                 </button>
                             </div>
                         </div>
-                    )}
 
-                    {/* Specs */}
-                    <div className="card" style={{ marginTop: 24, padding: 0, overflow: "hidden" }}>
-                        <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>
-                            Ingestion Specifications
-                        </div>
-                        <div style={{ padding: "16px 20px", fontSize: 13, color: "var(--text-secondary)" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: "8px 16px" }}>
-                                <span style={{ color: "var(--text-muted)" }}>Format</span><span>CSV (Comma Separated Values)</span>
-                                <span style={{ color: "var(--text-muted)" }}>Max Size</span><span>25 MB</span>
-                                <span style={{ color: "var(--text-muted)" }}>Encoding</span><span>UTF-8</span>
-                                <span style={{ color: "var(--text-muted)" }}>Expected</span><span>name, title, company, region, lead_source, visits, converted</span>
-                            </div>
-                        </div>
                     </div>
-                </div>
+                </main>
             </div>
         </DashboardLayout>
     );

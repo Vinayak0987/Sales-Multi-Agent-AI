@@ -1,0 +1,34 @@
+{
+  "bio": "Engagement Speed: High - Consistent behavior daily Role Match: Perfect - Title 'Chief Product Officer' aligns with ICP",
+  "news": [
+    "Accelerate Outreach - Active on relevant pages recently",
+    "Personalize around Scaling - Searched for infrastructure topics"
+  ],
+  "draft": [
+    {
+      "type": "html",
+      "content": "<span class='text-primary'>Subject:</span> Introduction"
+    },
+    {
+      "type": "text",
+      "content": "We noticed your recent activity. Let's connect."
+    },
+    {
+      "type": "br"
+    }
+  ],
+  "timing": {
+    "recommended": "Sunday, 01:00 AM EST",
+    "recommendedReason": "Highest engagement probability based on industry behavioral patterns.",
+    "events": [
+      {
+        "label": "TRIGGER EVENT",
+        "desc": "Account Activated",
+        "time": "Just now",
+        "type": "white"
+      }
+    ],
+    "localTime": "01:44 AM",
+    "targetTime": "01:44 AM (Target)"
+  }
+}

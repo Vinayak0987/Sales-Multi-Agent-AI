@@ -210,8 +210,4 @@ pytest tests/test_lead_research.py
 
 --- 
 
-## 🚀 Built By
-**Raviteja Kunapareddy**  
-Purpose-driven AI systems engineer who builds explainable, reasoning-first GenAI workflows.
 
-📌 [LinkedIn](https://www.linkedin.com/in/ravi-kunapareddy/) • [GitHub](https://github.com/RaviKunapareddy)

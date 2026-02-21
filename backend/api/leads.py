@@ -1,29 +1,32 @@
-"""
-Leads API — CRUD operations for lead data.
-"""
-
 import os
 import pandas as pd
-from fastapi import APIRouter, Query, UploadFile, File, HTTPException
-from typing import Optional
-import shutil
-import json
+from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, HTTPException, Query, Body
 
 router = APIRouter()
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
+# Setup correct absolute paths
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 LEADS_CSV = os.path.join(DATA_DIR, "Leads_Data.csv")
 
-
-def _load_leads_df():
-    """Load the leads DataFrame."""
-    if not os.path.exists(LEADS_CSV):
+def _load_leads_df(batch_id: Optional[str] = None):
+    """Load the leads DataFrame, optionally constrained to a specific batch."""
+    target_csv = LEADS_CSV
+    
+    if batch_id:
+        batch_dir = os.path.join(DATA_DIR, "batches", batch_id)
+        batch_csv = os.path.join(batch_dir, "Leads_Data.csv")
+        if os.path.exists(batch_csv):
+            target_csv = batch_csv
+            
+    if not os.path.exists(target_csv):
         raise HTTPException(status_code=404, detail="Leads data not found")
-    df = pd.read_csv(LEADS_CSV)
+        
+    df = pd.read_csv(target_csv)
     # Drop unnamed index columns
     df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
     return df
-
 
 @router.get("")
 def list_leads(
@@ -34,120 +37,109 @@ def list_leads(
     lead_source: Optional[str] = None,
     sort_by: Optional[str] = None,
     sort_dir: str = Query("asc", regex="^(asc|desc)$"),
+    batch_id: Optional[str] = None,
 ):
     """List leads with pagination, search, and filtering."""
-    df = _load_leads_df()
-
-    # Search
+    df = _load_leads_df(batch_id)
+    
+    # 1) Search filter
     if search:
-        mask = df.apply(lambda row: row.astype(str).str.contains(search, case=False).any(), axis=1)
-        df = df[mask]
-
-    # Filters
+        search = search.lower()
+        search_mask = (
+            df['name'].str.lower().str.contains(search, na=False) |
+            df['company'].str.lower().str.contains(search, na=False) |
+            df['title'].str.lower().str.contains(search, na=False)
+        )
+        df = df[search_mask]
+        
+    # 2) Specific filters
     if region:
-        df = df[df["region"].str.contains(region, case=False, na=False)]
+        df = df[df['region'].str.lower() == region.lower()]
     if lead_source:
-        df = df[df["lead_source"].str.contains(lead_source, case=False, na=False)]
-
-    # Sorting
+        df = df[df['lead_source'].str.lower() == lead_source.lower()]
+        
+    # 3) Sorting
     if sort_by and sort_by in df.columns:
-        df = df.sort_values(by=sort_by, ascending=(sort_dir == "asc"))
-
+        ascending = sort_dir == "asc"
+        df = df.sort_values(by=sort_by, ascending=ascending)
+        
+    # 4) Pagination
     total = len(df)
-    start = (page - 1) * page_size
-    end = start + page_size
-    page_data = df.iloc[start:end]
-
-    # Convert to records, handling NaN values
-    records = json.loads(page_data.to_json(orient="records"))
-
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    
+    paginated = df.iloc[start_idx:end_idx].copy()
+    paginated = paginated.where(pd.notnull(paginated), None)
+    
+    leads_list = paginated.to_dict(orient="records")
+    
     return {
-        "leads": records,
+        "data": leads_list,
         "total": total,
         "page": page,
-        "page_size": page_size,
-        "total_pages": max(1, (total + page_size - 1) // page_size),
+        "page_size": page_size
     }
-
 
 @router.get("/stats")
-def lead_stats():
-    """Get summary statistics about leads."""
-    df = _load_leads_df()
-
-    stats = {
-        "total_leads": len(df),
-        "by_region": df["region"].value_counts().head(10).to_dict() if "region" in df.columns else {},
-        "by_source": df["lead_source"].value_counts().head(10).to_dict() if "lead_source" in df.columns else {},
-        "converted": int(df["converted"].sum()) if "converted" in df.columns else 0,
-        "conversion_rate": float(df["converted"].mean()) if "converted" in df.columns else 0,
+def lead_stats(batch_id: Optional[str] = None):
+    df = _load_leads_df(batch_id)
+    total_leads = len(df)
+    active_pursuits = len(df[df['status'].isin(['Analysis', 'Processing_'])])
+    
+    converted_mask = df['converted'] == True
+    conversion_rate = 0
+    if total_leads > 0:
+        conversion_rate = round((len(df[converted_mask]) / total_leads) * 100, 1)
+        
+    return {
+        "total": total_leads,
+        "active_pursuits": active_pursuits,
+        "conversion_rate": conversion_rate,
+        "ready": len(df[df['status'] == 'Ready'])
     }
-    return stats
-
 
 @router.get("/filters")
-def lead_filters():
-    """Get available filter values."""
-    df = _load_leads_df()
-
-    filters = {
-        "regions": sorted(df["region"].dropna().unique().tolist()) if "region" in df.columns else [],
-        "sources": sorted(df["lead_source"].dropna().unique().tolist()) if "lead_source" in df.columns else [],
+def lead_filters(batch_id: Optional[str] = None):
+    df = _load_leads_df(batch_id)
+    regions = df['region'].dropna().unique().tolist()
+    sources = df['lead_source'].dropna().unique().tolist()
+    # Filter out nan/None just in case
+    regions = [r for r in regions if r]
+    sources = [s for s in sources if s]
+    
+    return {
+        "regions": sorted(regions),
+        "lead_sources": sorted(sources)
     }
-    return filters
 
-
-@router.get("/{lead_id}")
-def get_lead(lead_id: str):
-    """Get a single lead by index or lead_id."""
+@router.patch("/{record_id}/status")
+def update_lead_status(record_id: str, payload: dict = Body(...)):
+    new_status = payload.get("status")
+    intent_score = payload.get("intent_score")
+    
+    if not new_status and intent_score is None:
+        raise HTTPException(status_code=400, detail="Missing status or intent_score in body")
+        
     df = _load_leads_df()
-
-    # Try to find by lead_id column
-    if "lead_id" in df.columns:
-        match = df[df["lead_id"] == lead_id]
-        if not match.empty:
-            record = json.loads(match.iloc[0].to_json())
-            record["_index"] = int(match.index[0])
-            return record
-
-    # Fallback: try numeric index
-    try:
-        idx = int(lead_id)
-        if 0 <= idx < len(df):
-            record = json.loads(df.iloc[idx].to_json())
-            record["_index"] = idx
-            return record
-    except ValueError:
-        pass
-
-    raise HTTPException(status_code=404, detail=f"Lead '{lead_id}' not found")
-
-
-@router.post("/upload")
-async def upload_csv(file: UploadFile = File(...)):
-    """Upload a new leads CSV file."""
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are accepted")
-
-    # Check file size (25MB max)
-    contents = await file.read()
-    if len(contents) > 25 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File exceeds 25MB limit")
-
-    # Save file
-    dest = os.path.join(DATA_DIR, file.filename)
-    with open(dest, "wb") as f:
-        f.write(contents)
-
-    # Validate it's valid CSV
-    try:
-        df = pd.read_csv(dest)
-        return {
-            "status": "success",
-            "filename": file.filename,
-            "rows": len(df),
-            "columns": df.columns.tolist(),
-        }
-    except Exception as e:
-        os.remove(dest)
-        raise HTTPException(status_code=400, detail=f"Invalid CSV: {str(e)}")
+    
+    if 'record_id' not in df.columns:
+        df['record_id'] = df.index.astype(str)
+        
+    # Also support searching by lead_id 
+    if record_id in df['record_id'].values:
+        idx = df[df['record_id'] == record_id].index[0]
+    elif 'lead_id' in df.columns and record_id in df['lead_id'].values:
+        idx = df[df['lead_id'] == record_id].index[0]
+    else:
+        raise HTTPException(status_code=404, detail="Lead not found")
+        
+    if new_status:
+        df.at[idx, 'status'] = new_status
+    if intent_score is not None:
+        df.at[idx, 'intent_score'] = intent_score
+        
+    df.to_csv(LEADS_CSV, index=False)
+    
+    # Return updated row
+    updated_row = df.loc[idx].where(pd.notnull(df.loc[idx]), None).to_dict()
+    return updated_row

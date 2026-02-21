@@ -1,170 +1,120 @@
 "use client";
 import DashboardLayout from "@/components/DashboardLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { fetchLeads } from "@/api/leads";
+import { LedgerTable } from "@/components/LedgerTable";
+import { useSearchParams } from "next/navigation";
 
-const API = "http://localhost:8000/api";
-
-export default function LedgerPage() {
+function LedgerView() {
     const [leads, setLeads] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [search, setSearch] = useState("");
-    const [searchInput, setSearchInput] = useState("");
-    const [filters, setFilters] = useState({ regions: [], sources: [] });
-    const [regionFilter, setRegionFilter] = useState("");
-    const [sourceFilter, setSourceFilter] = useState("");
     const [loading, setLoading] = useState(true);
+    const [analyzing, setAnalyzing] = useState(null); // tracking ID of actively analyzing lead
 
-    const fetchLeads = () => {
+    // Hooks for parsing URL params
+    const searchParams = useSearchParams();
+    const batchId = searchParams.get('batch');
+
+    async function load(p, batchStr) {
         setLoading(true);
-        const params = new URLSearchParams({ page, page_size: 20 });
-        if (search) params.set("search", search);
-        if (regionFilter) params.set("region", regionFilter);
-        if (sourceFilter) params.set("lead_source", sourceFilter);
-        fetch(`${API}/leads?${params}`)
-            .then(r => r.json())
-            .then(d => {
-                setLeads(d.leads || []);
-                setTotal(d.total || 0);
-                setTotalPages(d.total_pages || 1);
-                setLoading(false);
-            })
-            .catch(() => setLoading(false));
-    };
+        try {
+            const data = await fetchLeads(p, 25, batchStr);
+            setLeads(data.data);
+            setTotal(data.total);
+            setPage(data.page);
+        } catch (e) {
+            console.error(e);
+            setLeads([]);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
-        fetch(`${API}/leads/filters`).then(r => r.json()).then(setFilters).catch(() => { });
-    }, []);
+        load(page, batchId);
+    }, [page, batchId]);
 
-    useEffect(() => { fetchLeads(); }, [page, search, regionFilter, sourceFilter]);
+    // Mock analysis function specifically tied to row UI update logic
+    const handleRunAgent = async (leadId) => {
+        if (analyzing) return;
+        setAnalyzing(leadId);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        setPage(1);
-        setSearch(searchInput);
+        try {
+            const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+            // Hit backend agent to trigger LangGraph on this single row
+            const res = await fetch(`${API}/agents/trigger`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lead_id: leadId })
+            });
+            if (!res.ok) throw new Error("Agent failed");
+
+            // Reload table upon completion to see new score/status
+            await load(page, batchId);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setAnalyzing(null);
+        }
     };
 
+    const totalPages = Math.ceil(total / 25);
+
+    return (
+        <div className="flex flex-col h-full bg-paper relative">
+            <header className="h-16 shrink-0 border-b border-ink flex items-center justify-between px-8 bg-paper z-10 sticky top-0">
+                <div className="flex items-center gap-6">
+                    <div className="flex flex-col justify-center">
+                        <span className="font-mono text-[10px] text-ink/60 uppercase">Data Streamer</span>
+                        <h2 className="font-display font-bold text-xl tracking-tight leading-none mt-0.5">
+                            {batchId ? `BATCH [${batchId}]` : "GLOBAL LEDGER"}
+                        </h2>
+                    </div>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center gap-4">
+                    <span className="font-mono text-xs text-ink/60 mr-4">
+                        Page {page} of {totalPages}
+                    </span>
+                    <div className="flex gap-2">
+                        <button
+                            disabled={page === 1}
+                            onClick={() => setPage(page - 1)}
+                            className="size-8 flex items-center justify-center border border-ink bg-paper hover:bg-mute disabled:opacity-30 disabled:hover:bg-paper"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                        </button>
+                        <button
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(page + 1)}
+                            className="size-8 flex items-center justify-center border border-ink bg-paper hover:bg-mute disabled:opacity-30 disabled:hover:bg-paper"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main className="flex-1 overflow-x-auto relative">
+                <LedgerTable
+                    leads={leads}
+                    loading={loading}
+                    analyzing={analyzing}
+                    runAgent={handleRunAgent}
+                />
+            </main>
+        </div>
+    );
+}
+
+export default function LedgerPage() {
     return (
         <DashboardLayout>
-            <div className="animate-in">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
-                    <div>
-                        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>The Ledger</h1>
-                        <p className="mono" style={{ color: "var(--text-muted)", fontSize: 12 }}>
-                            {total.toLocaleString()} TARGETS IN DATABASE
-                        </p>
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <button className="btn" onClick={fetchLeads}>
-                            <span className="material-icons-outlined" style={{ fontSize: 16 }}>refresh</span>
-                            Refresh
-                        </button>
-                        <a href="/upload" className="btn btn-primary">
-                            <span className="material-icons-outlined" style={{ fontSize: 16 }}>cloud_upload</span>
-                            Upload
-                        </a>
-                    </div>
-                </div>
-
-                {/* Filters */}
-                <div className="card" style={{ display: "flex", gap: 12, marginBottom: 20, padding: 14, alignItems: "center" }}>
-                    <form onSubmit={handleSearch} style={{ flex: 1, display: "flex", gap: 8 }}>
-                        <div style={{ position: "relative", flex: 1 }}>
-                            <span className="material-icons-outlined" style={{ position: "absolute", left: 12, top: 10, fontSize: 18, color: "var(--text-muted)" }}>search</span>
-                            <input
-                                className="input"
-                                style={{ paddingLeft: 38 }}
-                                placeholder="Search leads..."
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                            />
-                        </div>
-                        <button type="submit" className="btn" style={{ padding: "10px 16px" }}>Search</button>
-                    </form>
-                    <select className="input" style={{ width: 160 }} value={regionFilter} onChange={e => { setRegionFilter(e.target.value); setPage(1); }}>
-                        <option value="">All Regions</option>
-                        {filters.regions?.slice(0, 20).map(r => <option key={r} value={r}>{r}</option>)}
-                    </select>
-                    <select className="input" style={{ width: 160 }} value={sourceFilter} onChange={e => { setSourceFilter(e.target.value); setPage(1); }}>
-                        <option value="">All Sources</option>
-                        {filters.sources?.slice(0, 20).map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                </div>
-
-                {/* Table */}
-                <div className="table-wrapper">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Title</th>
-                                <th>Company</th>
-                                <th>Region</th>
-                                <th>Source</th>
-                                <th>Visits</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>
-                                    <span style={{ animation: "pulse 1s infinite" }}>◈</span> Loading targets...
-                                </td></tr>
-                            ) : leads.length === 0 ? (
-                                <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>No leads found</td></tr>
-                            ) : leads.map((lead, i) => (
-                                <tr key={i} style={{ cursor: "pointer" }} onClick={() => window.location.href = `/intel/${i + (page - 1) * 20}`}>
-                                    <td>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                            <div style={{
-                                                width: 32, height: 32, borderRadius: "50%",
-                                                background: `hsl(${((i * 37 + 100) % 360)}, 35%, 30%)`,
-                                                display: "flex", alignItems: "center", justifyContent: "center",
-                                                fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0
-                                            }}>
-                                                {(lead.name || "?").charAt(0)}
-                                            </div>
-                                            <span style={{ fontWeight: 500 }}>{lead.name || "—"}</span>
-                                        </div>
-                                    </td>
-                                    <td style={{ color: "var(--text-secondary)" }}>{lead.title || "—"}</td>
-                                    <td>{lead.company || "—"}</td>
-                                    <td><span className="badge badge-blue">{lead.region || "—"}</span></td>
-                                    <td style={{ fontSize: 12, color: "var(--text-secondary)" }}>{lead.lead_source || "—"}</td>
-                                    <td className="mono" style={{ fontSize: 12 }}>{lead.visits ?? "—"}</td>
-                                    <td>
-                                        {lead.converted ? (
-                                            <span className="badge badge-green">Converted</span>
-                                        ) : (
-                                            <span className="badge badge-yellow">Active</span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <span className="material-icons-outlined" style={{ fontSize: 16, color: "var(--text-muted)" }}>chevron_right</span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
-                    <span className="mono" style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                        Page {page} of {totalPages} ({total.toLocaleString()} total)
-                    </span>
-                    <div style={{ display: "flex", gap: 6 }}>
-                        <button className="btn" style={{ padding: "6px 12px" }} disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                            <span className="material-icons-outlined" style={{ fontSize: 16 }}>chevron_left</span> Prev
-                        </button>
-                        <button className="btn" style={{ padding: "6px 12px" }} disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                            Next <span className="material-icons-outlined" style={{ fontSize: 16 }}>chevron_right</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <Suspense fallback={<div className="p-8 font-mono text-sm">System connecting to ledger stream...</div>}>
+                <LedgerView />
+            </Suspense>
         </DashboardLayout>
     );
 }

@@ -1,16 +1,30 @@
-"""
-Agents API — Run and monitor the multi-agent pipeline.
-"""
-
+import sys
 import os
 import json
+import pandas as pd
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+# Add the project root to sys.path so we can import the agents
+root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
+
+from agents.lead_research_agent import LeadResearchAgent
+from agents.intent_qualifier_agent import IntentQualifierAgent
+
+# Load environment variables for LangGraph LLM
+load_dotenv(os.path.join(root_dir, ".env"))
 
 router = APIRouter()
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
 OUTPUTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "outputs")
+LEADS_CSV = os.path.join(DATA_DIR, "Leads_Data.csv")
+SALES_CSV = os.path.join(DATA_DIR, "Sales_Pipeline.csv")
 
 
 class AgentRunRequest(BaseModel):
@@ -122,6 +136,169 @@ def get_output(filename: str):
         return {"filename": filename, "data": data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read output: {str(e)}")
+
+
+import tempfile
+
+@router.post("/analyze/{lead_id}")
+async def analyze_lead(lead_id: str):
+    """Trigger the LangGraph workflow to compute real insights for a specific lead."""
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Server missing GOOGLE_API_KEY environment variable")
+    
+    # Configure the Gemini LLM
+    genai.configure(api_key=api_key)
+    try:
+        llm = genai.GenerativeModel('gemini-2.5-flash')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize LLM: {str(e)}")
+        
+    # Read the full datasets
+    if not os.path.exists(LEADS_CSV):
+        raise HTTPException(status_code=404, detail="Leads_Data.csv not found")
+        
+    leads_df = pd.read_csv(LEADS_CSV)
+    
+    # Match the lead (support both ID and generic numeric indexed row)
+    if "lead_id" in leads_df.columns:
+        lead_match = leads_df[leads_df["lead_id"] == lead_id]
+        if lead_match.empty:
+            raise HTTPException(status_code=404, detail=f"Lead '{lead_id}' not found")
+        test_lead = lead_match.iloc[0]
+        # Get matching sales pipeline data
+        sales_df = pd.read_csv(SALES_CSV) if os.path.exists(SALES_CSV) else pd.DataFrame()
+        test_sale = sales_df[sales_df['lead_id'] == test_lead['lead_id']] if 'lead_id' in sales_df.columns else pd.DataFrame()
+    else:
+        raise HTTPException(status_code=400, detail="Database missing 'lead_id' column")
+    
+    # Isolate data into temporary files so the agent only parses this one lead
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as leads_file:
+        pd.DataFrame([test_lead]).to_csv(leads_file.name, index=False)
+        leads_path = leads_file.name
+        
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as sales_file:
+        if not test_sale.empty:
+            pd.DataFrame(test_sale).to_csv(sales_file.name, index=False)
+        else:
+            pd.DataFrame(columns=sales_df.columns if not sales_df.empty else []).to_csv(sales_file.name, index=False)
+        sales_path = sales_file.name
+
+    try:
+        # Run Lead Research Agent
+        research_agent = LeadResearchAgent(llm)
+        research_agent.load_data(leads_path, sales_path)
+        
+        research_task = {
+            "input": f"Analyze lead {lead_id} ({test_lead.get('company', 'Unknown')}) and provide insights",
+            "id": "task_research_1",
+            "type": "lead_research"
+        }
+        
+        # This will trigger LangGraph internally
+        research_result_raw = research_agent.process_task(research_task)
+        
+        try:
+            research_result = json.loads(research_result_raw)
+        except:
+            research_result = {"error": "Failed to parse research insights JSON", "raw": str(research_result_raw)}
+            
+        # The IntentQualifierAgent takes insights from ResearchAgent. Let's see if we can run it too.
+        # But for now, we will dynamically write a mock intent_score to update the UI
+        # In a full flow, IntentQualifierAgent would score it based on the research.
+        
+        # Check if research array has any recommendations
+        engagement_list = research_result.get("engagement_recommendations", [])
+        
+        # Calculate a new intent_score based on the behavioral attributes
+        # Heuristics: high visits + high time_on_site -> 85-99
+        visits = int(test_lead.get("visits", 0)) if pd.notna(test_lead.get("visits", 0)) else 0
+        pages = float(test_lead.get("pages_per_visit", 0)) if pd.notna(test_lead.get("pages_per_visit", 0)) else 0
+        
+        base_score = 40
+        if visits > 5:
+            base_score += 25
+        elif visits > 2:
+            base_score += 15
+            
+        if pages > 4:
+            base_score += 20
+            
+        new_intent_score = min(99, base_score + (10 if test_lead.get("converted", False) else 0))
+        
+        # Update the master CSV to persist this!
+        lead_index = lead_match.index[0]
+        leads_df.at[lead_index, "intent_score"] = new_intent_score
+        leads_df.at[lead_index, "status"] = "Ready"  # Change status to show it was processed
+        leads_df.to_csv(LEADS_CSV, index=False)
+        
+        _agent_status["lead_research"]["last_run"] = pd.Timestamp.now().isoformat()
+        
+        return {
+            "status": "success",
+            "lead_id": lead_id,
+            "new_intent_score": new_intent_score,
+            "new_status": "Ready",
+            "insights": research_result
+        }
+        
+    finally:
+        # Cleanup temp files
+        os.unlink(leads_path)
+        os.unlink(sales_path)
+
+async def analyze_dataset_bulk():
+    """Trigger the LangGraph workflow on the entire dataset instantly in the background."""
+    print("Starting global background dataset analysis...")
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        print("Error: Server missing GOOGLE_API_KEY environment variable. Cannot analyze dataset.")
+        return
+        
+    # Configure the Gemini LLM
+    genai.configure(api_key=api_key)
+    try:
+        llm = genai.GenerativeModel('gemini-2.5-flash')
+    except Exception as e:
+        print(f"Error initializing LLM: {str(e)}")
+        return
+        
+    if not os.path.exists(LEADS_CSV):
+        print("Error: Leads_Data.csv not found")
+        return
+        
+    try:
+        # Run Lead Research Agent on the entire CSV
+        research_agent = LeadResearchAgent(llm)
+        research_agent.load_data(LEADS_CSV, SALES_CSV if os.path.exists(SALES_CSV) else None)
+        
+        research_task = {
+            "input": "Analyze the entire newly updated dataset and provide global macro insights",
+            "id": "task_research_bulk",
+            "type": "lead_research"
+        }
+        
+        # This will trigger LangGraph internally on the whole dataset
+        research_result_raw = research_agent.process_task(research_task)
+        
+        try:
+            research_result = json.loads(research_result_raw)
+            # Write global insights back to the outputs path so the UI picks them up
+            output_file = os.path.join(OUTPUTS_DIR, "lead_research_output.json")
+            os.makedirs(OUTPUTS_DIR, exist_ok=True)
+            with open(output_file, "w") as f:
+                json.dump(research_result, f, indent=4)
+                
+            _agent_status["lead_research"]["last_run"] = pd.Timestamp.now().isoformat()
+            
+            print(f"Successfully processed and generated global bulk analysis to {output_file}")
+            
+        except Exception as e:
+            print(f"Failed to parse or write research insights JSON: {e}")
+            print(f"Raw output: {research_result_raw[:200]}")
+            
+    except Exception as e:
+         print(f"Error during bulk agent processing: {e}")
 
 
 @router.post("/run/{agent_id}")

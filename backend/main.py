@@ -1,33 +1,21 @@
-"""
-Strategic Grid — Backend API Server
-FastAPI application powering the Strategic Grid Dashboard.
-"""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api import leads, agents, dashboard
+from api.dashboard import router as dashboard_router
+from api.leads import router as leads_router
+from api.agents import router as agents_router
+from api.batch import router as batch_router
 
-app = FastAPI(
-    title="Strategic Grid API",
-    description="Backend API for the Strategic Grid Sales Intelligence Dashboard",
-    version="2.4.0"
-)
+app = FastAPI(title="Strategic Grid API")
 
-# CORS — allow the Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount routers
-app.include_router(leads.router, prefix="/api/leads", tags=["Leads"])
-app.include_router(agents.router, prefix="/api/agents", tags=["Agents"])
-app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
-
-
-@app.get("/")
-def health():
-    return {"status": "online", "system": "Strategic Grid", "version": "2.4.0"}
+app.include_router(dashboard_router, prefix="/api/dashboard")
+app.include_router(leads_router, prefix="/api/leads")
+app.include_router(agents_router, prefix="/api/agents")
+app.include_router(batch_router, prefix="/api/batch")
