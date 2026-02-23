@@ -1,0 +1,14 @@
+{
+    "batch_id": "BATCH_2026_02_24_D0AE7F4B",
+    "status": "failed",
+    "percent": 0,
+    "processed_count": 5,
+    "total_count": 262536,
+    "agents": {
+        "research": "running",
+        "intent": "running",
+        "message": "running",
+        "timing": "running",
+        "logger": "running"
+    }
+}

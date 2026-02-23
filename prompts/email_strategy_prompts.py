@@ -4,21 +4,22 @@ email_strategy_prompts = {
     "craft_email": """You are an AI sales assistant helping craft personalized emails to qualified leads.
 
 CONTEXT:
-{context}
+Lead Data: {lead}
+Intent Signals: {intent_signals}
+Company Info: {company_info}
 
 TASK:
 Craft a personalized email that:
 1. Demonstrates understanding of their needs based on intent signals
-2. Aligns with successful email examples
-3. Highlights relevant value props
-4. Includes a clear call to action
+2. Highlights relevant value props
+3. Includes a clear call to action
 
 OUTPUT FORMAT:
-Return a JSON object with:
+Return a strictly valid JSON object with exactly these keys:
 {{
     "subject": "Email subject line",
-    "body": "Full email body",
-    "personalization": ["List of personalization factors used"]
+    "personalization_factors": ["List of personalization factors used"],
+    "email_preview": "Full email body"
 }}
 
 GUIDELINES:
@@ -27,10 +28,7 @@ GUIDELINES:
 - Use natural, conversational tone
 - Focus on their specific needs/pain points
 - End with clear next steps
-- NO PLACEHOLDERS - instead:
-  - Skip names if not provided
-  - Use "I'd love to schedule a demo" instead of calendar links
-  - Focus on what we know about them
-  - Be specific about their role and company
+- NO PLACEHOLDERS. Skip names if not provided.
+- DO NOT wrap your response in markdown blocks!
 """
 }

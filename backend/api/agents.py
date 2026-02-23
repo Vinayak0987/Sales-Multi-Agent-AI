@@ -6,7 +6,36 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
-import google.generativeai as genai
+import requests
+
+class OllamaResponse:
+    def __init__(self, text):
+        self.text = text
+
+class OllamaWrapper:
+    def __init__(self, model_name="minimax-m2:cloud"):
+        self.model_name = model_name
+        
+    def generate_content(self, prompt):
+        url = "http://127.0.0.1:11434/api/generate"
+        payload = {
+            "model": self.model_name,
+            "prompt": prompt,
+            "stream": False
+        }
+        headers = {"Content-Type": "application/json"}
+        try:
+            res = requests.post(url, json=payload, headers=headers, timeout=120)
+            res.raise_for_status()
+            data = res.json()
+            return OllamaResponse(data.get("response", ""))
+        except requests.exceptions.RequestException as e:
+            error_msg = str(e)
+            if res is not None and hasattr(res, 'text'):
+                error_msg += f" Response: {res.text}"
+            print(f"Ollama generation failed: {error_msg}")
+            return OllamaResponse("{}")
+
 
 # Add the project root to sys.path so we can import the agents
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -143,16 +172,11 @@ import tempfile
 @router.post("/analyze/{lead_id}")
 async def analyze_lead(lead_id: str):
     """Trigger the LangGraph workflow to compute real insights for a specific lead."""
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="Server missing GOOGLE_API_KEY environment variable")
-    
-    # Configure the Gemini LLM
-    genai.configure(api_key=api_key)
+    # Configure the Ollama LLM
     try:
-        llm = genai.GenerativeModel('gemini-2.5-flash')
+        llm = OllamaWrapper('minimax-m2:cloud')
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to initialize LLM: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to initialize Ollama LLM: {str(e)}")
         
     # Read the full datasets
     if not os.path.exists(LEADS_CSV):
@@ -250,17 +274,11 @@ async def analyze_lead(lead_id: str):
 async def analyze_dataset_bulk():
     """Trigger the LangGraph workflow on the entire dataset instantly in the background."""
     print("Starting global background dataset analysis...")
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        print("Error: Server missing GOOGLE_API_KEY environment variable. Cannot analyze dataset.")
-        return
-        
-    # Configure the Gemini LLM
-    genai.configure(api_key=api_key)
+    # Configure the Ollama LLM
     try:
-        llm = genai.GenerativeModel('gemini-2.5-flash')
+        llm = OllamaWrapper('minimax-m2:cloud')
     except Exception as e:
-        print(f"Error initializing LLM: {str(e)}")
+        print(f"Error initializing Ollama LLM: {str(e)}")
         return
         
     if not os.path.exists(LEADS_CSV):

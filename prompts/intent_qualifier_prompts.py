@@ -4,35 +4,42 @@ This module contains prompts for the Intent Qualifier Agent.
 Focuses on identifying high-intent leads based on behavior patterns.
 """
 
-# Simple prompt for generating insights from lead behavior
-generate_insights_prompt = """Analyze the following lead behavior data and identify purchase intent signals.
-Lead Data: {lead_data}
-Email Interactions: {email_data}
+generate_insights_prompt = """You are the Intent Qualifier AI Agent. Your job is to analyze the behavior of an individual sales lead and determine their exact purchase intent score.
 
-Focus on:
-1. Engagement patterns indicating serious purchase intent
-2. Key behaviors that differentiate high-intent leads
-3. Specific recommendations for sales follow-up
+Current Lead Data:
+{lead_data}
 
-IMPORTANT: Return a valid JSON object with this exact structure. Do not include any other text or formatting.
+Email Interaction History:
+{email_data}
+
+Analyze the behavioral patterns, email engagement, and demographics of this lead. Then, assign an intent score and identify the key signals that drove this score.
+
+IMPORTANT: Return a VALID JSON object with exactly this structure. DO NOT wrap the response in markdown blocks like ```json.
 {{
-  "intent_signals": [
+  "intent_score": 75.5,
+  "key_signals": [
     {{
-      "signal": "signal description",
-      "strength": "high/medium/low",
-      "evidence": "supporting data points"
+      "signal": "Replied to two outbound emails",
+      "strength": "High"
+    }},
+    {{
+      "signal": "Visited pricing page 4 times",
+      "strength": "High"
     }}
   ],
-  "recommendations": [
-    {{
-      "action": "recommended action",
-      "priority": "high/medium/low",
-      "reasoning": "why this action"
-    }}
-  ]
-}}"""
+  "recommendation": {{
+    "next_best_action": "Schedule a direct demo call",
+    "urgency": "High"
+  }}
+}}
 
-# Export prompts
+Rules:
+1. "intent_score" must be a float between 0.0 and 100.0. Higher means stronger buying intent.
+2. "strength" must be one of: "High", "Medium", "Low"
+3. "urgency" must be one of: "High", "Medium", "Low"
+4. Output strictly valid JSON.
+"""
+
 intent_qualifier_prompts = {
     "generate_insights": generate_insights_prompt
 }

@@ -7,7 +7,25 @@ from datetime import datetime
 from fastapi import APIRouter, File, UploadFile, HTTPException, BackgroundTasks
 import asyncio
 
-from api.agents import analyze_dataset_bulk
+# Import Ollama wrapper
+from api.agents import OllamaWrapper
+
+# Import our LangGraph node compilers
+import sys
+root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
+
+from langgraph_nodes.lead_research_node import create_lead_research_graph
+from langgraph_nodes.intent_qualifier_node import create_intent_qualifier_graph
+from langgraph_nodes.email_strategy_node import create_email_strategy_graph
+from langgraph_nodes.followup_timing_node import create_followup_timing_graph
+from langgraph_nodes.crm_logger_node import create_crm_logger_graph
+
+from prompts.lead_research_prompts import lead_research_prompts
+from prompts.intent_qualifier_prompts import intent_qualifier_prompts
+from prompts.email_strategy_prompts import email_strategy_prompts
+from prompts.followup_timing_prompts import followup_timing_prompts
 
 router = APIRouter()
 
@@ -30,6 +48,8 @@ def update_batch_progress(batch_id: str, updates: dict):
             "batch_id": batch_id,
             "status": "processing",
             "percent": 0,
+            "processed_count": 0,
+            "total_count": 0,
             "agents": {
                 "research": "pending",
                 "intent": "pending",
@@ -39,12 +59,11 @@ def update_batch_progress(batch_id: str, updates: dict):
             }
         }
     
-    if "status" in updates:
-        data["status"] = updates["status"]
-    if "percent" in updates:
-        data["percent"] = updates["percent"]
-    if "agents" in updates:
-        data["agents"].update(updates["agents"])
+    for key, val in updates.items():
+        if key == "agents":
+            data["agents"].update(val)
+        else:
+            data[key] = val
         
     with open(progress_file, "w") as f:
         json.dump(data, f, indent=4)
@@ -59,89 +78,126 @@ def get_batch_progress(batch_id: str):
 
 def process_batch_background(batch_id: str):
     """
-    Background worker that runs immediately after the 5 files are successfully downloaded to disk.
-    It prepares the data for the global Ledger lookup, then triggers LangGraph.
+    Background worker that uses LangGraph to process each lead sequentially 
+    through 5 AI agents, updating the CSV instantly so the UI can stream it.
     """
     try:
         time.sleep(1) # Give the UI a second to process the success response
         
-        # Start Research Agent
-        update_batch_progress(batch_id, {
-            "percent": 10,
-            "agents": { "research": "running" }
-        })
-        
         batch_dir = os.path.join(BATCHES_DIR, batch_id)
         leads_file = os.path.join(batch_dir, "Leads_Data.csv")
+        emails_file = os.path.join(batch_dir, "Email_Logs.csv")
         
-        if os.path.exists(leads_file):
-            df = pd.read_csv(leads_file)
+        if not os.path.exists(leads_file):
+            update_batch_progress(batch_id, { "status": "failed", "error": "Leads file missing" })
+            return
             
-            # Agent Running => Status = Processing_
-            df['status'] = 'Processing_'
+        df = pd.read_csv(leads_file)
+        emails_df = pd.read_csv(emails_file) if os.path.exists(emails_file) else pd.DataFrame()
+        
+        # Load the Ollama LLM
+        llm = OllamaWrapper('minimax-m2:cloud')
+        
+        # Compile the 5 independent LangGraph pipelines
+        lead_research_agent = create_lead_research_graph(llm, lead_research_prompts)
+        intent_qualifier_agent = create_intent_qualifier_graph(llm, intent_qualifier_prompts)
+        email_strategy_agent = create_email_strategy_graph(llm, email_strategy_prompts)
+        followup_timing_agent = create_followup_timing_graph(llm, followup_timing_prompts)
+        crm_logger_agent = create_crm_logger_graph()
+        
+        total = len(df)
+        
+        update_batch_progress(batch_id, {
+            "percent": 0,
+            "processed_count": 0,
+            "total_count": total,
+            "agents": { k: "running" for k in ["research", "intent", "message", "timing", "logger"] }
+        })
+        
+        # Stream analytics loop
+        for index, row in df.iterrows():
+            lead_dict = row.dropna().to_dict()
+            lead_id = lead_dict.get("lead_id", "")
             
-            # We run the Research LangGraph step first now
-            try:
-                # Trigger the real LangGraph insights engine via bulk
-                asyncio.run(analyze_dataset_bulk())
-                print(f"Batch {batch_id} fully researched via LangGraph.")
-            except Exception as e:
-                print(f"Error triggering global agents inside batch: {e}")
-                update_batch_progress(batch_id, { "status": "failed", "agents": { "research": "error" } })
-                return
+            # Extract previous emails for this specific lead to give to the state
+            if not emails_df.empty and 'lead_id' in emails_df.columns:
+                email_history = emails_df[emails_df['lead_id'] == lead_id].to_dict('records')
+            else:
+                email_history = []
                 
-            # Research done, moving to Intent Scoring
-            update_batch_progress(batch_id, {
-                "percent": 30,
-                "agents": { "research": "completed", "intent": "running" }
-            })
+            # Initialize unifying state
+            state = {
+                "lead": lead_dict,
+                "email_history": email_history
+            }
             
-            time.sleep(1) # simulate scoring time
+            print(f"\\n[{index+1}/{total}] Processing Lead {lead_id} ({lead_dict.get('company', 'Unknown')}) through LangGraph pipeline...")
             
-            visits = pd.to_numeric(df['visits'], errors='coerce').fillna(0)
-            pages = pd.to_numeric(df['pages_per_visit'], errors='coerce').fillna(0)
-            converted = df['converted'].astype(bool).fillna(False)
-            
-            base_score = pd.Series(40, index=df.index)
-            base_score += (visits > 5) * 25 + ((visits <= 5) & (visits > 2)) * 15
-            base_score += (pages > 4) * 20
-            base_score += converted * 10
-            
-            df['intent_score'] = base_score.clip(upper=99)
-            
-            # Save the scored version both in the batch folder and as the new global Leads_Data.csv
-            # so the Ledger Page immediately reflects the changes!
+            try:
+                # Node 1: Lead Research
+                state = lead_research_agent.invoke(state)
+                # Node 2: Intent Qualifier
+                state = intent_qualifier_agent.invoke(state)
+                # Node 3: Email Strategy 
+                state = email_strategy_agent.invoke(state)
+                # Node 4: Followup Timing
+                state = followup_timing_agent.invoke(state)
+                # Node 5: CRM Logger
+                state = crm_logger_agent.invoke(state)
+                
+                # Success! Extract the outputs into our dataframe for the frontend
+                df.at[index, "status"] = "Ready"
+                df.at[index, "intent_score"] = state.get("intent_score", 0.0)
+                df.at[index, "subject"] = state.get("subject", "")
+                df.at[index, "email_preview"] = state.get("email_preview", "")
+                
+                # Dump the full LangGraph state to an intel payload for the frontend /intel page
+                outputs_dir = os.path.join(root_dir, "outputs")
+                os.makedirs(outputs_dir, exist_ok=True)
+                
+                intel_db_path = os.path.join(outputs_dir, "intel_db.json")
+                intel_db = {}
+                if os.path.exists(intel_db_path):
+                    try:
+                        with open(intel_db_path, "r") as f:
+                            intel_db = json.load(f)
+                    except json.JSONDecodeError:
+                        pass
+                
+                intel_db[lead_id] = state
+                with open(intel_db_path, "w") as f:
+                    json.dump(intel_db, f, indent=4)
+                
+            except Exception as e:
+                print(f"Error processing lead {lead_id}: {e}")
+                df.at[index, "status"] = "Error"
+                
+            # Stream this row instantly to the Ledger
             df.to_csv(leads_file, index=False)
             df.to_csv(GLOBAL_LEADS_CSV, index=False)
-            print(f"Batch {batch_id} fully scored and synced to global Ledger mapping.")
             
-            # Intent done, move to downstream mock agents
+            # Tick progress
+            processed = index + 1
+            percent = int((processed / total) * 100)
             update_batch_progress(batch_id, {
-                "percent": 60,
-                "agents": { "intent": "completed", "message": "running" }
-            })
-            time.sleep(1)
-            update_batch_progress(batch_id, {
-                "percent": 85,
-                "agents": { "message": "completed", "timing": "completed", "logger": "running" }
-            })
-            time.sleep(0.5)
-            
-            update_batch_progress(batch_id, {
-                "status": "completed",
-                "percent": 100,
-                "agents": { "logger": "completed" }
+                "percent": percent,
+                "processed_count": processed,
+                "total_count": total
             })
             
-            # Upgrade global leads file to Ready status
-            df['status'] = 'Ready'
-            df.to_csv(leads_file, index=False)
-            df.to_csv(GLOBAL_LEADS_CSV, index=False)
+        # Finish
+        update_batch_progress(batch_id, {
+            "status": "completed",
+            "percent": 100,
+            "processed_count": total,
+            "total_count": total,
+            "agents": { k: "completed" for k in ["research", "intent", "message", "timing", "logger"] }
+        })
+        print(f"Batch {batch_id} fully processed through LangGraph and synced to global Ledger mapping.")
                 
     except Exception as e:
         print(f"Error during Background Batch processing: {e}")
         update_batch_progress(batch_id, { "status": "failed", "percent": 0 })
-
 
 @router.post("/upload")
 async def upload_batch(
@@ -164,9 +220,7 @@ async def upload_batch(
         # Helper to read into RAM and dump cleanly to the batch structure
         async def save_file(upload_file: UploadFile, filename: str):
             contents = await upload_file.read()
-            # Read cleanly to memory and drop directly to disk without locks
             df = pd.read_csv(io.BytesIO(contents))
-            # Clean unseen whitespace/unnamed columns
             df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
             df.to_csv(os.path.join(batch_dir, filename), index=False)
             

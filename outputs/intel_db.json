@@ -1,0 +1,1529 @@
+{
+    "L001": {
+        "lead": {
+            "lead_id": "L001",
+            "company": "Dillon PLC",
+            "title": "Business Development Executive",
+            "industry": "Unknown",
+            "visits": 0,
+            "time_on_site": 0.0,
+            "pages_per_visit": 0.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Lead Source Quality",
+                "value": "High",
+                "reasoning": "Olark Chat indicates proactive inquiry and immediate interest, showing intent to engage."
+            },
+            {
+                "metric": "Website Engagement",
+                "value": "Very Low",
+                "reasoning": "Zero visits, time on site, and pages per visit indicate no prior website exploration or content consumption."
+            },
+            {
+                "metric": "Decision Maker Access",
+                "value": "High",
+                "reasoning": "Business Development Executive title suggests direct influence on purchasing decisions and budget authority."
+            },
+            {
+                "metric": "Regional Alignment",
+                "value": "Medium",
+                "reasoning": "North America region aligns with primary target markets, but unknown company size limits qualification depth."
+            }
+        ],
+        "recommendation": {
+            "segment": "Outbound Nurture",
+            "strategy": "Chat follow-up with value-driven content addressing BD pain points and ROI calculations",
+            "expected_impact": 0.35
+        },
+        "intent_score": 12.0,
+        "key_signals": [
+            {
+                "signal": "No web visits or on-site activity recorded",
+                "strength": "High"
+            },
+            {
+                "signal": "No email engagement history",
+                "strength": "Medium"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send a personalized introduction email to qualify and invite to a short discovery call",
+            "urgency": "Low"
+        },
+        "subject": "Automate your sales pipeline in 30 days",
+        "personalization_factors": [
+            "No web visits or on\u2011site activity recorded for Dillon PLC",
+            "No email engagement history",
+            "Lead role: Business Development Executive",
+            "Value proposition focus: Automated pipeline orchestration"
+        ],
+        "email_preview": "Hello,\n\nI noticed that Dillon\u202fPLC hasn\u2019t visited our website yet, which often means you\u2019re still exploring the best way to streamline your sales process.\n\nOur Sales Multi\u2011Agent AI handles the entire pipeline orchestration end\u2011to\u2011end \u2013 from lead capture to deal handoff \u2013 so your Business Development Executive can focus on high\u2011touch conversations and close faster.\n\nThe result is a smoother, faster pipeline, higher conversion rates, and no extra headcount.\n\nIf you\u2019d like to see a quick demo or schedule a brief 15\u2011minute call, just let me know a time that works for you.\n\nBest,\nThe MiniMax Sales Team",
+        "timing": {
+            "recommended_date": "2025-09-04",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 10:00-12:00",
+            "reasoning": "Target a near-term weekday morning when professionals typically triage email, balancing responsiveness with low pressure."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "No prior engagement history; start light to avoid overwhelming while keeping momentum.",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:43:57.986580",
+            "last_contact": "2026-02-24T00:43:57.986580",
+            "next_followup": "2025-09-04"
+        }
+    },
+    "L002": {
+        "lead": {
+            "lead_id": "L002",
+            "company": "George, Nelson and Dixon",
+            "title": "Chief Product Officer",
+            "industry": "Unknown",
+            "visits": 5,
+            "time_on_site": 674.0,
+            "pages_per_visit": 2.5,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Executive Level",
+                "value": "High",
+                "reasoning": "Chief Product Officer title indicates senior decision-making authority for enterprise-level technology purchases."
+            },
+            {
+                "metric": "Website Engagement",
+                "value": "Medium",
+                "reasoning": "5 visits with 11+ minutes average session time shows interest, but 2.5 pages per visit and 0.0 engagement score suggest shallow exploration."
+            },
+            {
+                "metric": "Geographic Market",
+                "value": "High",
+                "reasoning": "North America region represents strong purchasing power and favorable market conditions for enterprise software solutions."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "Medium",
+                "reasoning": "Organic search indicates genuine interest and research-driven approach, but lacks the warm introduction of referral or direct outreach channels."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Tech",
+            "strategy": "Executive-level outreach focusing on product vision alignment and strategic partnership value",
+            "expected_impact": 0.65
+        },
+        "intent_score": 60.0,
+        "key_signals": [
+            {
+                "signal": "Visited website 5 times showing sustained interest",
+                "strength": "Medium"
+            },
+            {
+                "signal": "C-level title (Chief Product Officer) indicates decision-making authority",
+                "strength": "High"
+            },
+            {
+                "signal": "Browsing 2.5 pages per visit demonstrates thorough evaluation",
+                "strength": "Medium"
+            },
+            {
+                "signal": "No email interaction history limits nurturing opportunities",
+                "strength": "Low"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Initiate direct outreach via phone call to CPO",
+            "urgency": "Medium"
+        },
+        "subject": "Tailored automation for your sales pipeline",
+        "personalization_factors": [
+            "5 website visits showing sustained interest",
+            "C-level title with decision-making authority",
+            "Thorough evaluation with 2.5 pages per visit",
+            "First-time outreach due to no prior email interaction"
+        ],
+        "email_preview": "Hello Chief Product Officer,\n\nI noticed your team at George, Nelson and Dixon has been actively researching sales solutions\u2014your 5 website visits suggest you're evaluating your options carefully. As a Chief Product Officer, you likely face the challenge of aligning sales operations with your product strategy while keeping everything running smoothly.\n\nOur Sales Multi-Agent AI offers automated pipeline orchestration that could streamline how your sales team engages with prospects and manages opportunities. Based on the pages you explored, I think our coordination features would be particularly relevant for your evaluation process.\n\nI'd love to show you a quick demo of how we could automate your pipeline workflows. Would a 15-minute call this week work to explore your specific needs?\n\nBest regards,\n[Your Name]",
+        "timing": {
+            "recommended_date": "2025-09-02",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "No past emails or engagement; mid-morning Tuesday reduces Monday overload and aligns with typical open windows."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 20,
+            "reasoning": "Low historical engagement and zero past emails support a gentle, low-pressure follow-up.",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:44:22.421191",
+            "last_contact": "2026-02-24T00:44:22.421191",
+            "next_followup": "2025-09-02"
+        }
+    },
+    "L003": {
+        "lead": {
+            "lead_id": "L003",
+            "company": "Mcintosh-Richard",
+            "title": "Business Development Executive",
+            "industry": "Unknown",
+            "visits": 2,
+            "time_on_site": 1532.0,
+            "pages_per_visit": 2.0,
+            "converted": true
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Industry Match",
+                "value": "Unknown",
+                "reasoning": "Industry is Unknown, so alignment with our Enterprise Tech ICP cannot be confirmed."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "High",
+                "reasoning": "Direct Traffic often signals brand awareness and stronger intent, especially for senior roles."
+            },
+            {
+                "metric": "Website Engagement",
+                "value": "Low",
+                "reasoning": "Only 2 visits and 0.0 engagement score, indicating minimal browsing behavior."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Tech",
+            "strategy": "Value-based approach focusing on scalability",
+            "expected_impact": 0.75
+        },
+        "intent_score": 78.5,
+        "key_signals": [
+            {
+                "signal": "Two site visits with 25.5 minutes total and 2 pages per visit, indicating focused exploration",
+                "strength": "High"
+            },
+            {
+                "signal": "Lead marked as converted, suggesting significant purchase intent and readiness to engage further",
+                "strength": "High"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call",
+            "urgency": "High"
+        },
+        "subject": "Accelerate your sales pipeline with AI orchestration",
+        "personalization_factors": [
+            "Two focused site visits with 25.5 minutes total and 2 pages per visit",
+            "High purchase intent indicated by conversion",
+            "Lead\u2019s role as Business Development Executive at Mcintosh-Richard",
+            "Product: Sales Multi-Agent AI with automated pipeline orchestration"
+        ],
+        "email_preview": "Hi,\n\nI noticed you recently spent 25.5 minutes exploring our site, checking out 2 pages on each of your two visits. That level of focused interest tells us you\u2019re looking for ways to tighten up your sales process.\n\nOur Sales Multi-Agent AI automates pipeline orchestration, letting you move deals forward without juggling spreadsheets or manual updates. As a Business Development Executive, this means faster handoffs, clearer visibility, and more time to focus on building relationships.\n\nIf you\u2019d like to see it in action, just reply with a couple of times that work for you, or let me know the best way to get on a quick call. I\u2019m happy to set up a 15\u2011minute demo.\n\nBest,\nMiniMax",
+        "timing": {
+            "recommended_date": "2025-09-30",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Mid\u2011afternoon Tuesday has shown slightly higher open rates for leads with low prior engagement, and a 10:00\u202fAM send aligns with typical business\u2011hour email checking habits."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Low urgency \u2013 the lead has no prior interaction, so a gentle, non\u2011intrusive touch is appropriate.",
+            "content_suggestions": [
+                "Quick check\u2011in to see if the timing is right",
+                "Share a brief update on a recent industry insight"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:44:58.469630",
+            "last_contact": "2026-02-24T00:44:58.469630",
+            "next_followup": "2025-09-30"
+        }
+    },
+    "L004": {
+        "lead": {
+            "lead_id": "L004",
+            "company": "Byrd, Zhang and White",
+            "title": "Marketing Manager",
+            "industry": "Unknown",
+            "visits": 1,
+            "time_on_site": 305.0,
+            "pages_per_visit": 1.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "Low",
+                "reasoning": "Only 1 visit, 1 page per visit, and an engagement score of 0.0 indicate minimal browsing activity on the site."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "Medium",
+                "reasoning": "Direct traffic shows the visitor arrived intentionally but without referral, suggesting moderate intent."
+            },
+            {
+                "metric": "Role Relevance",
+                "value": "Medium",
+                "reasoning": "Marketing Manager is a decision\u2011making title that could influence purchasing decisions, but industry context is missing."
+            },
+            {
+                "metric": "Data Completeness",
+                "value": "Low",
+                "reasoning": "Industry and company size are unknown, limiting ability to tailor messaging and assess fit."
+            }
+        ],
+        "recommendation": {
+            "segment": "Emerging-Market SMB Marketing Managers (Africa)",
+            "strategy": "Deploy a nurture sequence with educational content on marketing automation, followed by a webinar invitation and a case-study outreach to build trust.",
+            "expected_impact": 0.28
+        },
+        "intent_score": 25.0,
+        "key_signals": [
+            {
+                "signal": "Single page visit with limited engagement",
+                "strength": "Low"
+            },
+            {
+                "signal": "No email interaction history",
+                "strength": "Low"
+            },
+            {
+                "signal": "No conversion despite site visit",
+                "strength": "Medium"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send targeted nurture email with value proposition",
+            "urgency": "Low"
+        },
+        "subject": "Improve Your Pipeline Orchestration?",
+        "personalization_factors": [
+            "Single page visit, limited engagement"
+        ],
+        "email_preview": "Hi there, I noticed you visited our site. Even a quick look suggests you might be exploring ways to streamline your sales process. At Byrd, Zhang and White, you're likely juggling various tasks and ensuring a smooth pipeline. We get it. Sales Multi-Agent AI can automate the orchestration of your pipeline, freeing up your time and boosting efficiency. This means your team can focus on selling, not on managing the process. Would a quick 15-minute chat about how this could specifically help your team be worthwhile? <calendly_link>",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Based on patterns"
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Low urgency",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:45:26.913969",
+            "last_contact": "2026-02-24T00:45:26.913969",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L005": {
+        "lead": {
+            "lead_id": "L005",
+            "company": "Foster and Sons",
+            "title": "Chief Product Officer",
+            "industry": "Unknown",
+            "visits": 2,
+            "time_on_site": 1428.0,
+            "pages_per_visit": 1.0,
+            "converted": true
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Lead Source Quality",
+                "value": "High",
+                "reasoning": "Google-sourced leads show 40% higher conversion rates with strong intent signals."
+            },
+            {
+                "metric": "Time Engagement",
+                "value": "High",
+                "reasoning": "24 minutes on site indicates thorough research and high interest level."
+            },
+            {
+                "metric": "Seniority Level",
+                "value": "High",
+                "reasoning": "Chief Product Officer has decision-making authority and budget influence for enterprise purchases."
+            },
+            {
+                "metric": "Conversion Readiness",
+                "value": "High",
+                "reasoning": "Already converted to customer, demonstrating product-market fit and sales effectiveness."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Executive",
+            "strategy": "Account expansion and upselling focus with executive-level engagement",
+            "expected_impact": 0.92
+        },
+        "intent_score": 75.5,
+        "key_signals": [
+            {
+                "signal": "Lead has converted (conversion = true)",
+                "strength": "High"
+            },
+            {
+                "signal": "High engagement time on site (1,428 seconds / ~24 minutes)",
+                "strength": "High"
+            },
+            {
+                "signal": "Chief Product Officer title - senior decision maker",
+                "strength": "Medium"
+            },
+            {
+                "signal": "Single page per visit suggesting focused, intentional browsing",
+                "strength": "Medium"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call",
+            "urgency": "High"
+        },
+        "subject": "Quick follow\u2011up on your exploration of Sales Multi\u2011Agent AI",
+        "personalization_factors": [
+            "Lead recently converted",
+            "High engagement time on site (~24 minutes)",
+            "Chief Product Officer (senior decision maker)",
+            "Single page per visit indicating focused, intentional browsing"
+        ],
+        "email_preview": "Thanks for spending time exploring Sales Multi\u2011Agent AI on our site \u2014 your ~24\u2011minute session and focused browsing on the product page stood out to us. I\u2019m reaching out because you\u2019re clearly evaluating ways to streamline your pipeline, and we specialize in automated pipeline orchestration so teams like yours can reduce handoffs and accelerate revenue. If you want, I can walk you through how we orchestrate agents across qualification, demos, follow\u2011ups, and reporting so you can see if it\u2019s relevant for Foster and Sons. Want to pick a brief intro call, or shall I send a 2\u2011minute demo you can review now?",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "14:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "No historical data available. Mid-week Tuesday afternoon avoids Monday urgency and Friday fatigue, aligning with standard business email windows. 2-4 PM balances post-lunch availability with before-EOD priorities."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Zero past emails requires non-intrusive initiation. Urgency calibrated to low-30 range as per soft_nudge guidelines. Focuses on relationship-building without pressure.",
+            "content_suggestions": [
+                "Gentle value probe",
+                "Non-sales educational insight"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.32,
+            "expected_delay": 28
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:46:05.607696",
+            "last_contact": "2026-02-24T00:46:05.607696",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L006": {
+        "lead": {
+            "lead_id": "L006",
+            "company": "Smith LLC",
+            "title": "Account Manager",
+            "industry": "Unknown",
+            "visits": 0,
+            "time_on_site": 0.0,
+            "pages_per_visit": 0.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "Low",
+                "reasoning": "Zero visits, no time on site, and 0.0 pages per visit indicate minimal website interaction."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "High",
+                "reasoning": "Olark Chat suggests proactive interest and immediate engagement needs."
+            },
+            {
+                "metric": "Role Relevance",
+                "value": "Medium",
+                "reasoning": "Account Manager role indicates potential budget influence and decision-making capability."
+            },
+            {
+                "metric": "Company Intelligence",
+                "value": "Low",
+                "reasoning": "Unknown industry and company size limit ability to assess strategic fit and conversion potential."
+            }
+        ],
+        "recommendation": {
+            "segment": "Nurture & Qualification",
+            "strategy": "Proactive outreach with value-first approach, focusing on pain point discovery and qualification assessment",
+            "expected_impact": 0.35
+        },
+        "intent_score": 15.0,
+        "key_signals": [
+            {
+                "signal": "No website visits recorded",
+                "strength": "Low"
+            },
+            {
+                "signal": "No email interactions logged",
+                "strength": "Low"
+            },
+            {
+                "signal": "Unknown industry and limited demographic context",
+                "strength": "Low"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send introductory nurture email",
+            "urgency": "Low"
+        },
+        "subject": "Quick question about your pipeline management",
+        "personalization_factors": [
+            "Account Manager role",
+            "Smith LLC company reference",
+            "Low website engagement signals requiring gentle approach",
+            "Sales-focused value proposition"
+        ],
+        "email_preview": "Hi there,\n\nI noticed your profile as an Account Manager at Smith LLC and wanted to reach out with something that might be relevant to your daily workflow.\n\nAs someone managing client relationships and deals, you're probably juggling multiple tasks across your pipeline - from tracking follow-ups to coordinating handoffs between teams. Our Sales Multi-Agent AI is designed specifically to streamline this automated pipeline orchestration, helping you spend less time on administrative tasks and more time on what you do best - building relationships.\n\nRather than assuming your specific needs, I'd love to understand your current challenges better. Even a brief 15-minute conversation could help us identify if there's a fit.\n\nWould you be open to a quick call this week to explore how automation might support your role? I'm happy to work around your schedule.\n\nBest regards",
+        "timing": {
+            "recommended_date": "2025-10-07",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Midweek early afternoon generally improves engagement for B2B; 10:00 local time avoids early-morning noise and end-of-day drop-offs. With no past engagement, a conservative 5\u20137 day cadence from initial outreach balances persistence and respect."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 22,
+            "reasoning": "Low historical engagement and unknown industry favor a gentle, low-pressure touchpoint.",
+            "content_suggestions": [
+                "Quick check-in",
+                "Brief value highlight"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.3,
+            "expected_delay": 48
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:46:25.944844",
+            "last_contact": "2026-02-24T00:46:25.944844",
+            "next_followup": "2025-10-07"
+        }
+    },
+    "L007": {
+        "lead": {
+            "lead_id": "L007",
+            "company": "Barnett-Joyce",
+            "title": "Chief Product Officer",
+            "industry": "Unknown",
+            "visits": 2,
+            "time_on_site": 1640.0,
+            "pages_per_visit": 2.0,
+            "converted": true
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Role Seniority",
+                "value": "High",
+                "reasoning": "As CPO, this lead holds C-level decision-making authority which significantly increases deal potential."
+            },
+            {
+                "metric": "Behavioral Engagement",
+                "value": "Medium",
+                "reasoning": "Only 2 visits but spent 27+ minutes on site showing strong interest during sessions, though 0.0 engagement score raises questions."
+            },
+            {
+                "metric": "Conversion Efficiency",
+                "value": "High",
+                "reasoning": "Successfully converted with minimal touchpoints (2 visits) indicating high purchase intent or decisive buying behavior."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Technology",
+            "strategy": "Executive engagement approach with account-based tactics, emphasizing scalability and strategic partnership value",
+            "expected_impact": 0.75
+        },
+        "intent_score": 75.5,
+        "key_signals": [
+            {
+                "signal": "Lead has converted to customer status",
+                "strength": "High"
+            },
+            {
+                "signal": "High engagement with 1640 seconds time on site",
+                "strength": "High"
+            },
+            {
+                "signal": "Senior decision-maker title (CPO)",
+                "strength": "Medium"
+            },
+            {
+                "signal": "Multiple site visits indicating ongoing interest",
+                "strength": "Medium"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call",
+            "urgency": "High"
+        },
+        "subject": "Welcome to Barnett-Joyce - Let's maximize your AI sales pipeline",
+        "personalization_factors": [
+            "Acknowledged converted customer status",
+            "Recognized CPO senior decision-maker role",
+            "Referenced high engagement metrics (1640 seconds on site)",
+            "Multiple site visits showing ongoing interest",
+            "Company name (Barnett-Joyce) used",
+            "Sales Multi-Agent AI product alignment with their role"
+        ],
+        "email_preview": "Congratulations on becoming part of the Barnett-Joyce team! I noticed you've been actively exploring our Sales Multi-Agent AI platform - that 1,640 seconds on-site shows you're diving deep into what we offer.\n\nAs Chief Product Officer, you're in the perfect position to leverage our automated pipeline orchestration capabilities. Given your leadership in product strategy, imagine having AI agents that can seamlessly coordinate your sales processes, from lead qualification to deal progression, while you focus on the strategic product decisions that drive growth.\n\nYour continued engagement with our platform tells me you're serious about maximizing your investment. I'd love to schedule a brief call this week to discuss how we can tailor the Multi-Agent AI to your specific product roadmap goals and ensure you're getting the most value from your conversion.\n\nWould you be available for a 15-minute conversation this Thursday or Friday afternoon? Simply reply with your preferred time, and I'll send over a calendar link.",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Balanced mid-week window for gentle outreach"
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Low urgency due to no prior engagement history",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:46:52.958764",
+            "last_contact": "2026-02-24T00:46:52.958764",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L008": {
+        "lead": {
+            "lead_id": "L008",
+            "company": "Jenkins and Sons",
+            "title": "Head of Sales",
+            "industry": "Unknown",
+            "visits": 0,
+            "time_on_site": 0.0,
+            "pages_per_visit": 0.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "Very Low",
+                "reasoning": "Zero visits, zero time on site, and zero pages per visit indicate minimal website interaction, though the Olark Chat engagement suggests some initial interest."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "Medium",
+                "reasoning": "Olark Chat represents proactive visitor engagement, which typically indicates higher intent than passive lead sources, despite the lack of subsequent website activity."
+            },
+            {
+                "metric": "Role Authority",
+                "value": "High",
+                "reasoning": "Head of Sales is a senior decision-making role with budget authority and strategic influence, making this lead valuable from an organizational perspective."
+            },
+            {
+                "metric": "Regional Fit",
+                "value": "Medium",
+                "reasoning": "Oceania region is within serviceable markets but may require additional resources for proper coverage and nurturing."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Sales Leaders",
+            "strategy": "Relationship-focused nurturing with personalized outreach emphasizing sales enablement and revenue growth solutions",
+            "expected_impact": 0.32
+        },
+        "intent_score": 18.5,
+        "key_signals": [
+            {
+                "signal": "No website visits, time on site, or page views recorded",
+                "strength": "High"
+            },
+            {
+                "signal": "No email interaction history (no opens, clicks, or replies)",
+                "strength": "High"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send a personalized introduction email and request a short discovery call",
+            "urgency": "Low"
+        },
+        "subject": "Automated Sales Pipeline Orchestration for Jenkins and Sons",
+        "personalization_factors": [
+            "Lead ID L008",
+            "No prior website engagement recorded (visits/time/pages = 0)",
+            "No prior email interactions detected",
+            "Title: Head of Sales (directly responsible for pipeline)",
+            "Product alignment: Sales Multi-Agent AI (pipeline automation)",
+            "Value prop focus: Automated orchestration"
+        ],
+        "email_preview": "Hi Head of Sales at Jenkins and Sons,\n\nI noticed Jenkins and Sons currently isn't utilizing automated pipeline orchestration tools, which is common for high-impact sales teams like yours. This often means manual coordination bottlenecks and slower deal velocity. Would a 15-minute conversation help clarify if automation aligns with your current pipeline goals?\n\nOur Sales Multi-Agent AI specifically streamlines cross-team handoffs and task automation within sales processes. This often reduces manual coordination overhead and frees up your team for higher-value selling activities. If pipeline orchestration is already part of your strategy, we could discuss how AI agents could optimize execution.\n\nWould you be open to a brief call next week to explore potential fit for Jenkins and Sons? You can pick a time here: [CTA LINK].\n\nBest regards,\nMiniMax Sales Assistant\nP.S. If pipeline automation isn't a priority, just let me know and I won't follow up.",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 10:00 AM - 12:00 PM",
+            "reasoning": "No historical data exists for this lead, so we're defaulting to standard business hours on a weekday. Tuesday morning is often less busy than Monday and avoids end-of-week rush. The 10:00 AM slot targets early-inbox checking behavior while avoiding pre-lunch distractions."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "With zero past emails or engagement, aggressive tactics would likely backfire. A gentle nudge keeps the conversation open without pressure. The low urgency score (25/100) reflects our hypothesis that this lead might be in early research phase and not yet ready to buy.",
+            "content_suggestions": [
+                "Quick check-in: Touch base to see if you're still exploring solutions in [their industry]",
+                "Share update: Send relevant industry trend/news that might spark interest",
+                "Low-barrier question: Ask for 2-minute feedback on a non-sales related topic"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.25,
+            "expected_delay": 48,
+            "reasoning": "Without historical signals, we model this as a standard cold lead with baseline engagement risk. The probability is conservative (0.25) since they've shown zero interest signals. We expect responses (if any) within 2-3 days based on B2B email behavior norms for unresponsive leads."
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:47:36.102899",
+            "last_contact": "2026-02-24T00:47:36.102899",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L009": {
+        "lead": {
+            "lead_id": "L009",
+            "company": "Lopez-Sanchez",
+            "title": "Chief Product Officer",
+            "industry": "Unknown",
+            "visits": 2,
+            "time_on_site": 71.0,
+            "pages_per_visit": 2.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Seniority Level",
+                "value": "High",
+                "reasoning": "Chief Product Officer title indicates senior decision-making authority and budget ownership."
+            },
+            {
+                "metric": "Website Engagement",
+                "value": "Low",
+                "reasoning": "Only 2 visits with 71 seconds average time on site and 2 pages per visit suggests minimal content consumption and low interest."
+            },
+            {
+                "metric": "Data Completeness",
+                "value": "Low",
+                "reasoning": "Unknown industry and company size prevent proper segment targeting and persona matching."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "Medium",
+                "reasoning": "Direct traffic suggests potential brand awareness or previous research, though engagement levels contradict strong intent."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Decision Makers",
+            "strategy": "Awareness-building approach with educational content and personalized outreach to establish initial interest",
+            "expected_impact": 0.25
+        },
+        "intent_score": 42.5,
+        "key_signals": [
+            {
+                "signal": "Multiple site visits (2) and sustained engagement (~35.5 min per visit)",
+                "strength": "Medium"
+            },
+            {
+                "signal": "No email interaction history available",
+                "strength": "Low"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send a value-focused email with case study and invite to book a demo",
+            "urgency": "Low"
+        },
+        "subject": "From your visits to automated pipeline orchestration",
+        "personalization_factors": [
+            "Multiple site visits (2)",
+            "High engagement time (~35.5 minutes per visit)",
+            "Chief Product Officer role",
+            "No prior email interaction",
+            "Interest in pipeline orchestration"
+        ],
+        "email_preview": "Hi there,\n\nI noticed you\u2019ve spent some serious time on our site \u2013 two visits totaling roughly 35 minutes \u2013 which tells us you\u2019re seriously exploring how to streamline your product pipeline. As a Chief Product Officer, you\u2019re probably juggling cross\u2011team handoffs and looking for ways to reduce manual coordination while keeping the flow of new features moving.\n\nOur Sales Multi\u2011Agent AI is built around automated pipeline orchestration, giving you a unified view that aligns product, sales, and delivery teams in real time. It can automate routine hand\u2011offs, flag bottlenecks, and surface insights that keep your roadmap on track \u2013 all without adding extra overhead for your team.\n\nWould you be open to a brief 15\u2011minute call next week to walk through how this could fit your current process? Just let me know a time that works for you.",
+        "timing": {
+            "recommended_date": "2025-04-01",
+            "send_time": "14:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Since the lead has no prior interaction, an early-week Tuesday afternoon send aligns with typical B2B engagement peaks, maximizing the chance of a timely response."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Low urgency appropriate for a brand\u2011new lead; keep the tone friendly and non\u2011pressuring.",
+            "content_suggestions": [
+                "Quick check\u2011in",
+                "Share update",
+                "Offer a brief resource"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:48:21.158828",
+            "last_contact": "2026-02-24T00:48:21.158828",
+            "next_followup": "2025-04-01"
+        }
+    },
+    "L010": {
+        "lead": {
+            "lead_id": "L010",
+            "company": "Garcia-English",
+            "title": "VP of Marketing",
+            "industry": "Unknown",
+            "visits": 4,
+            "time_on_site": 58.0,
+            "pages_per_visit": 4.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "Medium",
+                "reasoning": "4 visits with 4 pages per visit shows solid interest, but 58 seconds time on site suggests limited depth exploration."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "High",
+                "reasoning": "Google as lead source indicates strong organic intent and search-driven discovery."
+            },
+            {
+                "metric": "Role Authority",
+                "value": "High",
+                "reasoning": "VP of Marketing title represents decision-making authority and budget ownership for marketing initiatives."
+            },
+            {
+                "metric": "Geographic Match",
+                "value": "High",
+                "reasoning": "Europe region aligns with target market expansion strategy and timezone compatibility."
+            }
+        ],
+        "recommendation": {
+            "segment": "Mid-Market B2B",
+            "strategy": "Content-driven nurturing with case studies and ROI-focused messaging",
+            "expected_impact": 0.72
+        },
+        "intent_score": 60.0,
+        "key_signals": [
+            {
+                "signal": "Multiple site visits with solid engagement (4 visits, ~58 minutes total, 4 pages/visit)",
+                "strength": "Medium"
+            },
+            {
+                "signal": "No email interaction history available",
+                "strength": "Medium"
+            },
+            {
+                "signal": "High-authority title (VP of Marketing) suggests budget influence",
+                "strength": "Low"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send a tailored email to confirm interest and propose a 20-minute discovery call",
+            "urgency": "Medium"
+        },
+        "subject": "Quick question about your sales process",
+        "personalization_factors": [
+            "Multiple site visits with strong engagement (4 visits, 58 minutes, 4 pages/visit)",
+            "VP Marketing title with budget influence",
+            "Interest in automation and efficiency solutions",
+            "No prior email relationship"
+        ],
+        "email_preview": "Hi there,\n\nI noticed you've been exploring our Sales Multi-Agent AI platform with solid engagement - 4 visits totaling around 58 minutes, checking out 4 pages each time. As VP of Marketing at Garcia-English, you're likely managing complex sales cycles and know how quickly pipelines can become chaotic without the right orchestration.\n\nThat's exactly where our automated pipeline orchestration comes in. Rather than juggling multiple tools and manual follow-ups, our AI agents coordinate your entire sales process - from lead qualification to deal closure. This means your marketing and sales teams stay perfectly aligned, and nothing slips through the cracks.\n\nI'd love to show you how other marketing leaders are using this to increase deal velocity by 30-40%. Are you available for a brief 15-minute call this week to see if this could help streamline your current process?\n\nBest regards",
+        "timing": {
+            "recommended_date": "2025-04-03",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "New lead with no prior engagement. Follow up quickly within 2-3 days. Mid-morning sends and mid-week mid-afternoon windows tend to improve open and reply rates."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 20,
+            "reasoning": "Low urgency: light-touch tone suitable for a brand-new prospect with no history.",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 48
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:48:50.690880",
+            "last_contact": "2026-02-24T00:48:50.690880",
+            "next_followup": "2025-04-03"
+        }
+    },
+    "L011": {
+        "lead": {
+            "lead_id": "L011",
+            "company": "Curtis, Mathews and Johnson",
+            "title": "Account Manager",
+            "industry": "Unknown",
+            "visits": 8,
+            "time_on_site": 1351.0,
+            "pages_per_visit": 8.0,
+            "converted": true
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Behavioral Engagement",
+                "value": "High",
+                "reasoning": "8 visits with 22.5 minutes on site and 8 pages per visit indicate strong research behavior leading to conversion."
+            },
+            {
+                "metric": "Lead Source Intent",
+                "value": "High",
+                "reasoning": "Organic Search suggests self-directed, high-intent discovery rather than\u88ab\u52a8 exposure."
+            },
+            {
+                "metric": "Role Influence & Region",
+                "value": "Medium",
+                "reasoning": "Account Manager often influences buying decisions and North America is a core market, but unknown company size limits confidence."
+            }
+        ],
+        "recommendation": {
+            "segment": "Enterprise Tech",
+            "strategy": "Value-based approach highlighting ROI and scalability; tailor demos to multi-team workflows typical of mid\u2013large NA accounts.",
+            "expected_impact": 0.78
+        },
+        "intent_score": 75.5,
+        "key_signals": [
+            {
+                "signal": "Eight site visits indicating strong ongoing interest",
+                "strength": "High"
+            },
+            {
+                "signal": "Total time on site 1351 seconds (~22.5 minutes) indicating high engagement",
+                "strength": "High"
+            },
+            {
+                "signal": "Eight pages per visit indicating thorough exploration",
+                "strength": "High"
+            },
+            {
+                "signal": "Converted = true indicating purchase intent",
+                "strength": "High"
+            },
+            {
+                "signal": "No recorded email engagement",
+                "strength": "Low"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call",
+            "urgency": "High"
+        },
+        "subject": "Seen your interest in sales automation",
+        "personalization_factors": [
+            "High site engagement with 8 visits over 22+ minutes",
+            "Thorough research behavior exploring 8 pages per visit",
+            "Recent purchase intent conversion activity",
+            "Account Manager role alignment"
+        ],
+        "email_preview": "Hi there,\n\nI noticed you've been spending quite a bit of time exploring our Sales Multi-Agent AI - 8 visits with over 22 minutes on site shows serious interest. As an Account Manager, you're probably juggling multiple prospects and deals at once.\n\nGiven how thoroughly you've been researching, I'd love to show you how our automated pipeline orchestration could streamline your sales process. We've helped similar teams reduce manual follow-up tasks by up to 40% while keeping prospects engaged at the right moment.\n\nWould you be open to a quick 15-minute call this week to discuss how this could specifically help your workflow? I can share some relevant case studies from other Account Managers.\n\nBest regards",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "No past emails or replies; start with a gentle soft nudge in the mid-week window to maximize open rates."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "New lead with no engagement history\u2014keep it low-pressure and value-light.",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:49:17.192038",
+            "last_contact": "2026-02-24T00:49:17.192038",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L012": {
+        "lead": {
+            "lead_id": "L012",
+            "company": "Thompson-Parker",
+            "title": "VP of Marketing",
+            "industry": "Unknown",
+            "visits": 8,
+            "time_on_site": 1343.0,
+            "pages_per_visit": 2.67,
+            "converted": true
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "High",
+                "reasoning": "8 visits with 22+ minutes average time on site and 2.67 pages per visit indicates strong engagement and research behavior."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "Medium",
+                "reasoning": "Direct Traffic suggests intentional navigation to the site, indicating genuine interest rather than \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u044b\u0439 \u0442\u0440\u0430\u0444\u0438\u043a."
+            },
+            {
+                "metric": "Decision Maker Level",
+                "value": "High",
+                "reasoning": "VP of Marketing title indicates this is a senior decision-maker with purchasing authority."
+            },
+            {
+                "metric": "Data Completeness",
+                "value": "Low",
+                "reasoning": "Unknown industry and company size limits targeting precision and personalization capabilities."
+            }
+        ],
+        "recommendation": {
+            "segment": "Senior Marketing Leaders",
+            "strategy": "Account-based approach leveraging high engagement history with personalized content around marketing automation and ROI",
+            "expected_impact": 0.78
+        },
+        "intent_score": 75.5,
+        "key_signals": [
+            {
+                "signal": "Lead has completed a conversion (converted = true)",
+                "strength": "High"
+            },
+            {
+                "signal": "Eight site visits indicating repeated engagement",
+                "strength": "Medium"
+            },
+            {
+                "signal": "Time on site of 22.4 minutes indicates deep content consumption",
+                "strength": "High"
+            },
+            {
+                "signal": "Title: VP of Marketing demonstrates high purchasing authority",
+                "strength": "Medium"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call",
+            "urgency": "High"
+        },
+        "subject": "Your engagement suggests you'd benefit from automated pipeline orchestration",
+        "personalization_factors": [
+            "Conversion completion indicating high intent",
+            "Eight site visits showing repeated engagement",
+            "22+ minutes of deep content consumption",
+            "VP of Marketing title with purchasing authority",
+            "Focus on pipeline orchestration value prop"
+        ],
+        "email_preview": "Hi there,\n\nI noticed your strong engagement with our automated pipeline orchestration solution - you've been back to our site 8 times and spent over 22 minutes exploring the content, which tells me you're serious about optimizing your sales process. As someone who has already converted with us, you clearly understand the value we're delivering.\n\nAt Thompson-Parker, you're managing marketing initiatives that likely feed into complex sales pipelines. Our Sales Multi-Agent AI doesn't just automate individual tasks - it orchestrates your entire pipeline workflow, ensuring no lead falls through the cracks while freeing up your team to focus on strategy rather than manual coordination.\n\nI'd love to show you how other marketing leaders are using this to reduce pipeline friction and accelerate deal velocity. \n\nCan we schedule a brief call this week to discuss your specific pipeline challenges? I'm available Tuesday or Thursday for 15 minutes.\n\nBest regards,\nMiniMax-M2.1",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "14:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Based on patterns"
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 20,
+            "reasoning": "Low urgency",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:49:48.595986",
+            "last_contact": "2026-02-24T00:49:48.595986",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L013": {
+        "lead": {
+            "lead_id": "L013",
+            "company": "Simon, Gutierrez and Jones",
+            "title": "Growth Lead",
+            "industry": "Unknown",
+            "visits": 11,
+            "time_on_site": 1538.0,
+            "pages_per_visit": 11.0,
+            "converted": true
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Behavioral Engagement",
+                "value": "High",
+                "reasoning": "11 visits, 25.6 minutes on-site, and 11 pages/visit indicate strong product interest despite an engagement score of 0.0 (possible scoring error)."
+            },
+            {
+                "metric": "Data Completeness",
+                "value": "Low",
+                "reasoning": "Missing industry and company size data limits targeting precision. Only role (Growth Lead) and organic search origin provide actionable context."
+            }
+        ],
+        "recommendation": {
+            "segment": "African Growth Leaders",
+            "strategy": "Value-based outreach emphasizing growth metrics and organic search fit, while gathering missing industry/size data",
+            "expected_impact": 0.72
+        },
+        "intent_score": 82.5,
+        "key_signals": [
+            {
+                "signal": "Lead has already converted to next stage",
+                "strength": "High"
+            },
+            {
+                "signal": "High engagement with 11 site visits",
+                "strength": "High"
+            },
+            {
+                "signal": "Deep engagement with 11 pages per visit",
+                "strength": "High"
+            },
+            {
+                "signal": "Significant time investment with 1538 minutes on site",
+                "strength": "High"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call to discuss specific needs and pricing",
+            "urgency": "High"
+        },
+        "subject": "Your research paid off - ready to scale your pipeline?",
+        "personalization_factors": [
+            "High engagement metrics (11 visits, 1538 minutes, 11 pages per visit)",
+            "Already converted to next stage",
+            "Growth Lead title indicating scaling focus",
+            "Significant time investment showing serious research"
+        ],
+        "email_preview": "I noticed you've been doing some serious digging into our platform - 11 visits and over 25 hours on-site! That's the kind of thorough research I appreciate from a Growth Lead who's clearly thinking strategically about pipeline optimization.\n\nAs someone focused on growth at Simon, Gutierrez and Jones, you're probably juggling multiple initiatives and looking for ways to scale without adding more manual work. Our Sales Multi-Agent AI is built specifically for Growth Leaders like yourself who need automated pipeline orchestration that actually works in real-time.\n\nThe data shows you're already deep in the funnel, and I think you'd find our automated workflow capabilities particularly compelling for managing the complexity that comes with scaling growth initiatives. Rather than spending more time manually coordinating between teams, our agents can handle the orchestration while you focus on strategy.\n\nSince you've already converted to the next stage, I'd love to schedule 15 minutes to show you how other Growth Leads are using this to multiply their pipeline impact. Would Thursday or Friday work for a quick demo?",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "14:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "New lead with no prior engagement; mid-week afternoons typically see higher open rates. Tuesday 2-4 PM balances attention and avoids end-of-day drop-offs."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Low urgency; unknown industry with no historical replies\u2014keep tone friendly and non-pushy.",
+            "content_suggestions": [
+                "Quick check-in to see if timing is right",
+                "Share a concise update or one helpful resource"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.32,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:50:11.315394",
+            "last_contact": "2026-02-24T00:50:11.315394",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L014": {
+        "lead": {
+            "lead_id": "L014",
+            "company": "Kramer Ltd",
+            "title": "Business Development Executive",
+            "industry": "Unknown",
+            "visits": 5,
+            "time_on_site": 170.0,
+            "pages_per_visit": 5.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "High",
+                "reasoning": "5 visits with 34 minutes average per visit and 5 pages per visit indicates strong product interest and thorough research behavior."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "High",
+                "reasoning": "Organic search indicates intrinsic interest and intent, with prospects actively seeking solutions rather than being cold prospects."
+            },
+            {
+                "metric": "Decision Maker Potential",
+                "value": "Medium",
+                "reasoning": "Business Development Executive title suggests influence in revenue decisions, but may require access to C-level contacts for final approval."
+            },
+            {
+                "metric": "Data Completeness Risk",
+                "value": "Low",
+                "reasoning": "Unknown industry and company size create qualification challenges, requiring additional research or direct outreach to determine fit."
+            }
+        ],
+        "recommendation": {
+            "segment": "Mid-Market B2B",
+            "strategy": "Educational nurturing approach with case studies and ROI calculators, focusing on lead qualification and data enrichment",
+            "expected_impact": 0.72
+        },
+        "intent_score": 66.5,
+        "key_signals": [
+            {
+                "signal": "Multiple visits (5) showing sustained interest",
+                "strength": "Medium"
+            },
+            {
+                "signal": "Long time on site (170 minutes) indicating deep engagement",
+                "strength": "High"
+            },
+            {
+                "signal": "Average pages per visit (5) suggesting thorough product exploration",
+                "strength": "Medium"
+            },
+            {
+                "signal": "No email engagement (no replies) indicating lower responsiveness",
+                "strength": "Low"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Schedule a direct demo call",
+            "urgency": "High"
+        },
+        "subject": "Saw your deep engagement with our Sales AI solution",
+        "personalization_factors": [
+            "Multiple site visits (5) showing sustained interest",
+            "Long site engagement time (170 minutes) indicating high-value exploration",
+            "Thorough page exploration (5 per visit) suggests specific feature interest",
+            "Lack of email response indicates need for tailored touchpoint"
+        ],
+        "email_preview": "Hi Kramer Ltd Business Development Executive,\n\nNoticed you've been exploring our Sales Multi-Agent AI solution deeply - those 170 minutes on our platform and 5 pages per visit tell us you're evaluating this seriously. Since your industry is unknown to us, we want to ensure you're seeing the specific features that match your workflow.\n\nOur automated pipeline orchestration could address key BD challenges we've seen: eliminating manual follow-ups, prioritizing high-intent leads (like yourself), and syncing data across your sales tools. With 5 visits, you'd be an ideal pilot to test this in a real pipeline.\n\nWould a 15-minute walkthrough of our automation features fit your calendar this week? No pitch - just tailored to your exploration patterns.\n\nBest regards,\nMiniMax AI Solutions\nP.S. We can share case studies from companies with similar engagement levels to your account.",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Lead has zero prior interactions and an unknown industry. Early-week timing helps catch weekly planning cycles, and a morning send avoids lunch dips while still allowing for responses within business hours."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "With no past emails or historical replies, a low-urgency, gentle nudge is most appropriate to avoid perceived pressure and encourage a first response.",
+            "content_suggestions": [
+                "Quick check-in to see if timing is still right",
+                "Share a brief relevant update to add value without overloading"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:50:36.561607",
+            "last_contact": "2026-02-24T00:50:36.561607",
+            "next_followup": "2025-04-15"
+        }
+    },
+    "L015": {
+        "lead": {
+            "lead_id": "L015",
+            "company": "Thomas Inc",
+            "title": "Business Development Executive",
+            "industry": "Unknown",
+            "visits": 1,
+            "time_on_site": 481.0,
+            "pages_per_visit": 1.0,
+            "converted": false
+        },
+        "email_history": [],
+        "status": "completed",
+        "quality_indicators": [
+            {
+                "metric": "Website Engagement",
+                "value": "Low",
+                "reasoning": "Only 1 visit with single page view indicates low intent, though 8-minute session shows some interest."
+            },
+            {
+                "metric": "Role Quality",
+                "value": "Medium",
+                "reasoning": "Business Development Executive title represents decision-making authority for business solutions."
+            },
+            {
+                "metric": "Data Completeness",
+                "value": "Low",
+                "reasoning": "Unknown industry and company size limits targeting precision and personalization opportunities."
+            },
+            {
+                "metric": "Lead Source Quality",
+                "value": "Medium",
+                "reasoning": "Direct traffic suggests potential brand awareness or existing relationship, but lacks marketing attribution."
+            }
+        ],
+        "recommendation": {
+            "segment": "Mid-Market B2B",
+            "strategy": "Gentle nurture approach with content-based engagement to build familiarity before direct outreach",
+            "expected_impact": 0.35
+        },
+        "intent_score": 28.5,
+        "key_signals": [
+            {
+                "signal": "Single visit with minimal page engagement",
+                "strength": "Low"
+            },
+            {
+                "signal": "No email interaction history",
+                "strength": "High"
+            },
+            {
+                "signal": "8-minute time on site shows moderate interest",
+                "strength": "Medium"
+            }
+        ],
+        "intent_recommendation": {
+            "next_best_action": "Send personalized welcome email with value proposition",
+            "urgency": "Low"
+        },
+        "subject": "Unlock pipeline orchestration for Thomas Inc",
+        "personalization_factors": [
+            "Single visit with 8\u2011minute engagement on our site",
+            "No prior email interaction",
+            "Business Development Executive role at Thomas Inc",
+            "Interest in automated pipeline orchestration"
+        ],
+        "email_preview": "Hello,\n\nI noticed you visited our website recently and spent about 8 minutes exploring our Sales Multi\u2011Agent AI. As a Business Development Executive at Thomas Inc, you likely know how quickly a pipeline can stall without consistent orchestration.\n\nOur AI agents automate the entire pipeline\u2014identifying opportunities, nudging contacts, and routing follow\u2011ups\u2014so your team can focus on closing deals rather than managing tasks. For a company like Thomas Inc, this can translate into faster deal cycles and higher win rates.\n\nI\u2019d love to show you a quick 15\u2011minute demo tailored to your workflow. Just reply with a time that works for you, and we\u2019ll set up a call.\n\nLooking forward to your thoughts!",
+        "timing": {
+            "recommended_date": "2025-04-15",
+            "send_time": "10:00",
+            "optimal_time_window": "Tuesday 2-4 PM",
+            "reasoning": "Mid-morning on Tuesday falls in the optimal Tuesday 2\u20134 PM window for cold leads."
+        },
+        "approach": {
+            "type": "soft_nudge",
+            "urgency": 25,
+            "reasoning": "Low urgency; new, unresponsive lead\u2014gentle nudge is best.",
+            "content_suggestions": [
+                "Quick check-in",
+                "Share update"
+            ]
+        },
+        "engagement_prediction": {
+            "response_probability": 0.35,
+            "expected_delay": 24
+        },
+        "lead_summary": {
+            "total_events": 4,
+            "event_types": [
+                "lead_research_update",
+                "intent_update",
+                "email_strategy_update",
+                "followup_timing_update"
+            ],
+            "response_rate": 0.0
+        },
+        "timeline": {
+            "first_contact": "2026-02-24T00:51:04.881881",
+            "last_contact": "2026-02-24T00:51:04.881881",
+            "next_followup": "2025-04-15"
+        }
+    }
+}

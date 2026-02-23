@@ -16,6 +16,10 @@ function LedgerView() {
     const searchParams = useSearchParams();
     const batchId = searchParams.get('batch');
 
+    // Listen to real-time batch writes if a batch is active
+    const { useBatchProgress } = require("@/hooks/useBatchProgress");
+    const progress = useBatchProgress(batchId);
+
     async function load(p, batchStr) {
         setLoading(true);
         try {
@@ -31,9 +35,17 @@ function LedgerView() {
         }
     }
 
+    // Initial load and pagination changes
     useEffect(() => {
         load(page, batchId);
     }, [page, batchId]);
+
+    // Fast-refresh when progress ticks
+    useEffect(() => {
+        if (progress && (progress.status === 'processing' || progress.status === 'completed')) {
+            load(page, batchId);
+        }
+    }, [progress?.percent, progress?.status]);
 
     // Mock analysis function specifically tied to row UI update logic
     const handleRunAgent = async (leadId) => {

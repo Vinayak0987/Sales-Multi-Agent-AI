@@ -3,87 +3,67 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect, use } from "react";
 // Since this is a detail page, it requires the dynamic ID from the URL.
 
+import { useSearchParams } from "next/navigation";
+
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export default function IntelPage({ params }) {
     const unwrappedParams = use(params);
     const id = unwrappedParams.id;
+    const searchParams = useSearchParams();
+    const batchId = searchParams.get('batch');
+
     const [target, setTarget] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Mock data based on the design for visual presentation
     useEffect(() => {
-        const mockData = {
-            id: id,
-            name: "Alexandra Voss",
-            title: "CTO",
-            company: "OMNI-CORP",
-            intent: 88,
-            status: "Ready State",
-            signal: "HIGH VELOCITY",
-            linkedin: "linkedin.com/in/alexandravoss",
-            website: "omni-corp.tech",
-            bio: "15+ years in Cloud Infrastructure. Previously VP Eng at DataFlow. Currently leading a 200+ person org focused on Kubernetes migration and stateless architecture scaling.",
-            news: [
-                "Omni-Corp raises $50M Series B led by Sequoia.",
-                "Speaking at KubeCon '24: \"Scaling without State\".",
-                "Hiring aggressively for DevSecOps roles in Q3."
-            ],
-            timing: {
-                recommended: "Tuesday, 10:00 AM EST",
-                recommendedReason: "Highest engagement probability based on previous LinkedIn activity patterns.",
-                events: [
-                    { label: "TRIGGER EVENT", desc: "Series B Funding Announced", time: "2 Days Ago", type: "white" },
-                    { label: "SIGNAL", desc: 'Profile View: "Kubernetes Scaling"', time: "4 Days Ago", type: "gray" }
-                ],
-                localTime: "14:32 PM",
-                targetTime: "11:32 AM (PST)"
-            },
-            draft: [
-                { type: 'html', content: '<span class="text-primary">Subject:</span> Re: Your KubeCon talk on stateless scaling' },
-                { type: 'text', content: 'Hi Alexandra,' },
-                { type: 'br' },
-                { type: 'text', content: 'I caught your upcoming session on the KubeCon agenda regarding "Scaling without State"—specifically the challenge of data persistence in ephemeral environments.' },
-                { type: 'br' },
-                { type: 'text', content: 'At Omni-Corp\'s current Series B growth stage, balancing developer velocity with infrastructure stability is usually the breaking point. I\'m curious if your team is currently managing stateful workloads in-house or leveraging managed services?' },
-                { type: 'br' },
-                { type: 'text', content: 'We\'ve helped teams like DataFlow cut their k8s management overhead by 40% using our grid architecture.' },
-                { type: 'br' },
-                { type: 'text', content: 'Open to a brief exchange on this next Tuesday at 10 AM EST?' },
-                { type: 'br' },
-                { type: 'text', content: 'Best,<br/>Agent Smith' }
-            ],
-            logs: [
-                { time: "10:42:01", agent: "STRATEGY", action: "Draft generated via GPT-4 (Template: Series B Outreach)", status: "SUCCESS" },
-                { time: "10:41:55", agent: "TIMING", action: "Analyzed 45 historical signals. Optimal slot identified.", status: "SUCCESS" },
-                { time: "10:41:12", agent: "RESEARCH", action: "Scraped LinkedIn, TechCrunch, Twitter. Entities extracted: 14.", status: "SUCCESS" },
-                { time: "10:41:00", agent: "SYSTEM", action: "Lead imported from CSV Upload.", status: "INIT" }
-            ]
-        };
-
-        fetch(`${API}/leads/${id}`)
+        const queryParams = batchId ? `?batch_id=${batchId}` : '';
+        fetch(`${API}/leads/${id}${queryParams}`)
             .then(res => {
                 if (!res.ok) throw new Error("Lead not found");
                 return res.json();
             })
             .then(data => {
-                setTarget({
-                    ...mockData,
-                    id: data.lead_id || data._index || id,
-                    name: data.name || data.first_name || mockData.name,
-                    title: data.title || mockData.title,
-                    company: data.company || data.organization || mockData.company,
-                    intent: data.intent_score !== undefined ? data.intent_score : mockData.intent,
-                    status: data.status || mockData.status,
-                });
+                // Map the new structured backend JSON to the expected visual template
+                const fullData = {
+                    id: data.lead_id,
+                    name: data.profile?.name || "Unknown",
+                    title: data.profile?.title || "Unknown",
+                    company: data.profile?.company || "Unknown",
+                    linkedin: data.profile?.linkedin || "",
+                    website: data.profile?.website || "",
+                    bio: data.profile?.bio || "",
+                    intent: data.agents?.intent?.score || 0,
+                    status: data.status || "Ready State",
+                    signal: data.agents?.intent?.reasoning || "Pending Analysis",
+                    news: data.agents?.research?.signals || [],
+                    timing: {
+                        recommended: data.agents?.timing?.recommended || "N/A",
+                        recommendedReason: data.agents?.timing?.recommendedReason || "",
+                        events: [
+                            { label: "TRIGGER EVENT", desc: "Pipeline Initialized", time: "Just Now", type: "white" }
+                        ],
+                        localTime: "14:32 PM",
+                        targetTime: "11:32 AM (PST)"
+                    },
+                    draft: Array.isArray(data.agents?.message?.draft) ? data.agents.message.draft : [
+                        { type: 'text', content: data.agents?.message?.draft || "Compiling draft..." }
+                    ],
+                    logs: data.agents?.crm?.logs || [
+                        { time: "10:42:01", agent: "STRATEGY", action: "Draft generated via GPT-4", status: "SUCCESS" },
+                        { time: "10:41:55", agent: "TIMING", action: "Analyzed 45 historical signals.", status: "SUCCESS" },
+                        { time: "10:41:12", agent: "RESEARCH", action: "Scraped web endpoints.", status: "SUCCESS" },
+                        { time: "10:41:00", agent: "SYSTEM", action: "Lead initialized.", status: "INIT" }
+                    ]
+                };
+                setTarget(fullData);
                 setLoading(false);
             })
             .catch(err => {
                 console.error("Failed to fetch lead data:", err);
-                setTarget(mockData);
                 setLoading(false);
             });
-    }, [id]);
+    }, [id, batchId]);
 
     if (loading || !target) {
         return (

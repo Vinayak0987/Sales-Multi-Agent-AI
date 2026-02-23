@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { StatusBadge } from "./StatusBadge";
 
 export function LedgerRow({ lead, analyzing, runAgent }) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
     const leadIdField = lead.lead_id || lead._index;
     const isAnalyzing = analyzing === leadIdField;
     const activeStatus = isAnalyzing ? "Processing" : (lead.status || "Ready");
@@ -9,8 +13,14 @@ export function LedgerRow({ lead, analyzing, runAgent }) {
     const opacityClass = score == null ? "opacity-50" : "";
     const leadId = lead.lead_id || lead.id;
 
+    const openReport = () => {
+        const batch = searchParams.get('batch');
+        const query = batch ? `?batch=${batch}` : '';
+        router.push(`/intel/${leadId}${query}`);
+    };
+
     return (
-        <tr className="h-[64px] group hover:bg-ink hover:text-paper cursor-pointer transition-colors relative border-b border-ink">
+        <tr onClick={openReport} className="h-[64px] group hover:bg-ink hover:text-paper cursor-pointer transition-colors relative border-b border-ink">
             <td className="px-6 py-3 font-mono text-sm border-r border-ink group-hover:border-paper">{leadId}</td>
             <td className="px-6 py-3 border-r border-ink group-hover:border-paper">
                 <div className="flex flex-col">

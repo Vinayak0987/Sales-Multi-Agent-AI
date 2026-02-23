@@ -112,6 +112,136 @@ def lead_filters(batch_id: Optional[str] = None):
         "lead_sources": sorted(sources)
     }
 
+@router.get("/{record_id}")
+def get_lead_details(record_id: str, batch_id: Optional[str] = None):
+    """Retrieve full intelligence report data for a specific lead."""
+    df = _load_leads_df(batch_id)
+    
+    if 'record_id' not in df.columns:
+        df['record_id'] = df.index.astype(str)
+        
+    if record_id in df['record_id'].values:
+        idx = df[df['record_id'] == record_id].index[0]
+    elif 'lead_id' in df.columns and record_id in df['lead_id'].values:
+        idx = df[df['lead_id'] == record_id].index[0]
+    else:
+        raise HTTPException(status_code=404, detail="Lead not found")
+        
+    row = df.loc[idx].where(pd.notnull(df.loc[idx]), None).to_dict()
+    
+    import json
+    # Map CSV fields into the deeply nested Intelligence Report schema
+    lead_id = row.get('lead_id') or str(idx)
+    name = row.get('name') or row.get('first_name') or "Unknown"
+    company = row.get('company') or row.get('organization') or "Unknown"
+    title = row.get('title', "Unknown")
+    
+    # Default Mock / Fallback Values
+    email_draft = [
+        {"type": "text", "content": f"Hi {name.split(' ')[0]},"},
+        {"type": "br"},
+        {"type": "text", "content": "I noticed your recent activity..."}
+    ]
+    research_signals = ["High Engagement", "Target Account Hit"]
+    intent_reasoning = f"Based on {row.get('visits', 0)} visits and {row.get('pages_per_visit', 0)} pages/visit."
+    timing_rec = "Tuesday 10:00 AM"
+    timing_reason = "High probability of engagement based on historical activity."
+    
+    from datetime import datetime
+    now_str = datetime.now().strftime("%H:%M:%S")
+    crm_logs = [
+        {"time": now_str, "agent": "SYSTEM", "action": "Initialized lead record.", "status": "INIT"}
+    ]
+    
+    # Attempt to load rich data from the agent outputs directory
+    outputs_dir = os.path.join(BASE_DIR, "outputs")
+    intel_db_path = os.path.join(outputs_dir, "intel_db.json")
+    
+    if os.path.exists(intel_db_path):
+        try:
+            with open(intel_db_path, "r") as f:
+                intel_db = json.load(f)
+            
+            if lead_id in intel_db:
+                state = intel_db[lead_id]
+                
+                # Map research (Agent 1)
+                # Ensure each signal is a flat string because frontend expects an array of strings
+                if "quality_indicators" in state and isinstance(state["quality_indicators"], list):
+                    research_signals = [
+                        f"{q.get('metric', '')}: {q.get('value', '')}" if isinstance(q, dict) else str(q)
+                        for q in state["quality_indicators"]
+                    ]
+                
+                # Map intent (Agent 2)
+                if "key_signals" in state and isinstance(state["key_signals"], list):
+                    signals = [s.get("signal", str(s)) if isinstance(s, dict) else str(s) for s in state["key_signals"]]
+                    intent_reasoning = " \u2022 ".join(signals)
+                
+                # Map message (Agent 3) - Split into lines and breaks for React rendering
+                if "email_preview" in state:
+                    raw_text = state["email_preview"]
+                    paragraphs = str(raw_text).replace('\\n', '\n').split('\n')
+                    draft_blocks = []
+                    for line in paragraphs:
+                        if line.strip() == "":
+                            draft_blocks.append({"type": "br"})
+                        else:
+                            draft_blocks.append({"type": "text", "content": line})
+                    email_draft = draft_blocks
+                
+                # Map timing (Agent 4)
+                if "timing" in state and isinstance(state["timing"], dict):
+                    timing_rec = f"{state['timing'].get('recommended_date', '')} {state['timing'].get('send_time', '')}".strip()
+                    timing_reason = state['timing'].get('reasoning', '')
+                
+                # Map logs (Agent 5 - Construct from the state's success)
+                if "lead_summary" in state:
+                    crm_logs = [
+                        {"time": now_str, "agent": "STRATEGY", "action": "Draft generated via LangGraph.", "status": "SUCCESS"},
+                        {"time": now_str, "agent": "TIMING", "action": f"Analyzed history and targeted {timing_rec}", "status": "SUCCESS"},
+                        {"time": now_str, "agent": "INTENT", "action": f"Calculated Intent Score: {state.get('intent_score', 0)}", "status": "SUCCESS"},
+                        {"time": now_str, "agent": "RESEARCH", "action": f"Identified {len(research_signals)} signals.", "status": "SUCCESS"},
+                        {"time": now_str, "agent": "SYSTEM", "action": "Graph sequence processing finished.", "status": "SUCCESS"}
+                    ]
+                    
+        except Exception as e:
+            print(f"Error loading intel file: {e}")
+    
+    return {
+        "lead_id": lead_id,
+        "profile": {
+            "name": name,
+            "title": title,
+            "company": company,
+            "linkedin": row.get('linkedin', f"linkedin.com/in/{name.lower().replace(' ', '')}"),
+            "website": row.get('website', f"{company.lower().replace(' ', '')}.com"),
+            "bio": row.get('bio', f"{title} at {company}. Leading strategic initiatives and growth.")
+        },
+        "agents": {
+            "research": {
+                "summary": "Processed via LangGraph Pipeline.",
+                "signals": research_signals
+            },
+            "intent": {
+                "score": row.get('intent_score', row.get('intent', 0)),
+                "reasoning": intent_reasoning
+            },
+            "message": {
+                "draft": email_draft
+            },
+            "timing": {
+                "recommended": timing_rec,
+                "recommendedReason": timing_reason
+            },
+            "crm": {
+                "logs": crm_logs
+            }
+        },
+        "status": row.get('status', 'Ready'),
+        "batch_id": batch_id
+    }
+
 @router.patch("/{record_id}/status")
 def update_lead_status(record_id: str, payload: dict = Body(...)):
     new_status = payload.get("status")

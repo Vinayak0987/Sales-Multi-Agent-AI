@@ -1,53 +1,55 @@
 {
-  "agent": "Lead Research Agent",
-  "timestamp": "2026-02-17T10:06:00.861712",
-  "input": {
-    "lead": {
-      "company": "Dillon PLC",
-      "region": "North America",
-      "source": "Olark Chat",
-      "visits": 0,
-      "time_on_site": 0.0,
-      "pages_per_visit": 0.0
-    }
-  },
-  "result": {
     "lead_quality_indicators": {
-      "behavioral": [
-        {
-          "metric": "Engagement Score",
-          "threshold": ">0.0",
-          "importance": 0.9
-        }
-      ],
-      "demographic": [
-        {
-          "metric": "Company Size",
-          "threshold": "50-500 employees",
-          "importance": 0.7
-        }
-      ]
+        "behavioral": [
+            {
+                "metric": "Website visits per week",
+                "threshold": ">5 visits",
+                "importance": 0.9
+            },
+            {
+                "metric": "Average time on site per session",
+                "threshold": ">900 seconds",
+                "importance": 0.85
+            },
+            {
+                "metric": "Pages viewed per visit",
+                "threshold": ">3 pages",
+                "importance": 0.75
+            },
+            {
+                "metric": "Overall engagement score",
+                "threshold": ">8.0",
+                "importance": 0.8
+            }
+        ],
+        "demographic": [
+            {
+                "metric": "Traffic source",
+                "threshold": "Referral or Organic Search",
+                "importance": 0.85
+            }
+        ]
     },
     "engagement_recommendations": [
-      {
-        "segment": "Leads with 0 Engagement Score and incomplete profile data",
-        "strategy": "Automated email drip for data enrichment and initial content consumption",
-        "expected_impact": 0.5
-      }
+        {
+            "segment": "Referral traffic leads",
+            "strategy": "Immediate sales contact with referral partner notification",
+            "expected_impact": 0.88
+        },
+        {
+            "segment": "Multi-visit high engagement leads",
+            "strategy": "Priority sales outreach within 24 hours",
+            "expected_impact": 0.82
+        },
+        {
+            "segment": "Organic Search and Google leads with deep engagement",
+            "strategy": "Automated nurturing sequence with sales handoff after 3+ visits",
+            "expected_impact": 0.75
+        },
+        {
+            "segment": "Leads with 5+ visits and 900+ seconds time on site",
+            "strategy": "Direct sales contact with personalized follow-up",
+            "expected_impact": 0.79
+        }
     ]
-  },
-  "summary": {
-    "quality_indicators": [
-      {
-        "metric": "Engagement Score",
-        "threshold": ">0.0",
-        "importance": 0.9
-      }
-    ],
-    "recommendation": {
-      "segment": "Leads with 0 Engagement Score and incomplete profile data",
-      "strategy": "Automated email drip for data enrichment and initial content consumption",
-      "expected_impact": 0.5
-    }
-  }
 }
