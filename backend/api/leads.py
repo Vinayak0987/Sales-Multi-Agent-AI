@@ -142,6 +142,8 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
         {"type": "br"},
         {"type": "text", "content": "I noticed your recent activity..."}
     ]
+    email_subject = "Checking in"
+    personalization_factors = []
     research_signals = ["High Engagement", "Target Account Hit"]
     intent_reasoning = f"Based on {row.get('visits', 0)} visits and {row.get('pages_per_visit', 0)} pages/visit."
     intent_recommendation = {"next_best_action": "Pending analysis", "urgency": "Medium"}
@@ -196,6 +198,10 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
                         else:
                             draft_blocks.append({"type": "text", "content": line})
                     email_draft = draft_blocks
+                if "subject" in state:
+                    email_subject = state.get("subject", "")
+                if "personalization_factors" in state:
+                    personalization_factors = state.get("personalization_factors", [])
                 
                 # Map timing (Agent 4)
                 if "timing" in state and isinstance(state["timing"], dict):
@@ -243,7 +249,9 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
                 "recommendation": intent_recommendation
             },
             "message": {
-                "draft": email_draft
+                "draft": email_draft,
+                "subject": email_subject,
+                "personalization_factors": personalization_factors
             },
             "timing": {
                 "recommended": timing_rec,

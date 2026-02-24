@@ -54,6 +54,8 @@ export default function IntelPage({ params }) {
                     draft: Array.isArray(data.agents?.message?.draft) ? data.agents.message.draft : [
                         { type: 'text', content: data.agents?.message?.draft || "Compiling draft..." }
                     ],
+                    subject: data.agents?.message?.subject || "No Subject",
+                    personalizationFactors: data.agents?.message?.personalization_factors || [],
                     logs: data.agents?.crm?.logs || [
                         { time: "10:42:01", agent: "STRATEGY", action: "Draft generated via GPT-4", status: "SUCCESS" },
                         { time: "10:41:55", agent: "TIMING", action: "Analyzed 45 historical signals.", status: "SUCCESS" },
@@ -301,6 +303,9 @@ export default function IntelPage({ params }) {
                                         </div>
                                         {/* Content Editable Area */}
                                         <div className="flex-1 p-6 font-mono text-sm leading-relaxed text-ink/80 focus:outline-none overflow-y-auto" contentEditable suppressContentEditableWarning>
+                                            <div className="mb-4 pb-2 border-b border-ink/20 font-bold">
+                                                Subject: {target.subject}
+                                            </div>
                                             {target.draft.map((line, i) => {
                                                 if (line.type === 'br') return <br key={i} />;
                                                 if (line.type === 'html') return <div key={i} className="mb-4 text-ink/50 select-none" dangerouslySetInnerHTML={{ __html: line.content }} />;
