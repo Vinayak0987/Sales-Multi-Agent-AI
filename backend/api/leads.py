@@ -218,10 +218,10 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
                 # Map logs (Agent 5 - Construct from the state's success)
                 if "lead_summary" in state:
                     crm_logs = [
+                        {"time": now_str, "agent": "RESEARCH", "action": f"Identified {len(research_signals)} signals.", "status": "SUCCESS"},
+                        {"time": now_str, "agent": "INTENT", "action": f"Calculated Intent Score: {state.get('intent_score', 0)}", "status": "SUCCESS"},
                         {"time": now_str, "agent": "STRATEGY", "action": "Draft generated via LangGraph.", "status": "SUCCESS"},
                         {"time": now_str, "agent": "TIMING", "action": f"Analyzed history and targeted {timing_rec}", "status": "SUCCESS"},
-                        {"time": now_str, "agent": "INTENT", "action": f"Calculated Intent Score: {state.get('intent_score', 0)}", "status": "SUCCESS"},
-                        {"time": now_str, "agent": "RESEARCH", "action": f"Identified {len(research_signals)} signals.", "status": "SUCCESS"},
                         {"time": now_str, "agent": "SYSTEM", "action": "Graph sequence processing finished.", "status": "SUCCESS"}
                     ]
                     

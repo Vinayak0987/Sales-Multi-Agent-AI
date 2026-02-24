@@ -57,10 +57,11 @@ export default function IntelPage({ params }) {
                     subject: data.agents?.message?.subject || "No Subject",
                     personalizationFactors: data.agents?.message?.personalization_factors || [],
                     logs: data.agents?.crm?.logs || [
-                        { time: "10:42:01", agent: "STRATEGY", action: "Draft generated via GPT-4", status: "SUCCESS" },
-                        { time: "10:41:55", agent: "TIMING", action: "Analyzed 45 historical signals.", status: "SUCCESS" },
-                        { time: "10:41:12", agent: "RESEARCH", action: "Scraped web endpoints.", status: "SUCCESS" },
-                        { time: "10:41:00", agent: "SYSTEM", action: "Lead initialized.", status: "INIT" }
+                        { time: "10:41:00", agent: "RESEARCH", action: "Scraped web endpoints.", status: "SUCCESS" },
+                        { time: "10:41:12", agent: "INTENT", action: "Calculated Intent Score: 12.0", status: "SUCCESS" },
+                        { time: "10:41:55", agent: "STRATEGY", action: "Draft generated via GPT-4", status: "SUCCESS" },
+                        { time: "10:42:01", agent: "TIMING", action: "Analyzed 45 historical signals.", status: "SUCCESS" },
+                        { time: "10:42:05", agent: "SYSTEM", action: "Graph sequence processing finished.", status: "SUCCESS" }
                     ]
                 };
                 setTarget(fullData);

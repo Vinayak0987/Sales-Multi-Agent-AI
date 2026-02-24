@@ -6,6 +6,8 @@ import pandas as pd
 from datetime import datetime
 from fastapi import APIRouter, File, UploadFile, HTTPException, BackgroundTasks
 import asyncio
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Import Ollama wrapper
 from api.agents import OllamaWrapper
@@ -65,8 +67,10 @@ def update_batch_progress(batch_id: str, updates: dict):
         else:
             data[key] = val
         
-    with open(progress_file, "w") as f:
+    temp_file = progress_file + ".tmp"
+    with open(temp_file, "w") as f:
         json.dump(data, f, indent=4)
+    os.replace(temp_file, progress_file)
 
 @router.get("/{batch_id}/progress")
 def get_batch_progress(batch_id: str):
@@ -115,7 +119,11 @@ def process_batch_background(batch_id: str):
         })
         
         # Stream analytics loop
-        for index, row in df.iterrows():
+        file_lock = threading.Lock()
+        processed = 0
+
+        def process_lead(index, row):
+            nonlocal processed
             lead_dict = row.dropna().to_dict()
             lead_id = lead_dict.get("lead_id", "")
             
@@ -131,7 +139,7 @@ def process_batch_background(batch_id: str):
                 "email_history": email_history
             }
             
-            print(f"\\n[{index+1}/{total}] Processing Lead {lead_id} ({lead_dict.get('company', 'Unknown')}) through LangGraph pipeline...")
+            print(f"\\n[Processing] Lead {lead_id} ({lead_dict.get('company', 'Unknown')}) through LangGraph pipeline...")
             
             try:
                 # Node 1: Lead Research
@@ -145,45 +153,72 @@ def process_batch_background(batch_id: str):
                 # Node 5: CRM Logger
                 state = crm_logger_agent.invoke(state)
                 
-                # Success! Extract the outputs into our dataframe for the frontend
-                df.at[index, "status"] = "Ready"
-                df.at[index, "intent_score"] = state.get("intent_score", 0.0)
-                df.at[index, "subject"] = state.get("subject", "")
-                df.at[index, "email_preview"] = state.get("email_preview", "")
-                
-                # Dump the full LangGraph state to an intel payload for the frontend /intel page
-                outputs_dir = os.path.join(root_dir, "outputs")
-                os.makedirs(outputs_dir, exist_ok=True)
-                
-                intel_db_path = os.path.join(outputs_dir, "intel_db.json")
-                intel_db = {}
-                if os.path.exists(intel_db_path):
-                    try:
-                        with open(intel_db_path, "r") as f:
-                            intel_db = json.load(f)
-                    except json.JSONDecodeError:
-                        pass
-                
-                intel_db[lead_id] = state
-                with open(intel_db_path, "w") as f:
-                    json.dump(intel_db, f, indent=4)
+                with file_lock:
+                    # Success! Extract the outputs into our dataframe for the frontend
+                    df.at[index, "status"] = "Ready"
+                    df.at[index, "intent_score"] = state.get("intent_score", 0.0)
+                    df.at[index, "subject"] = state.get("subject", "")
+                    df.at[index, "email_preview"] = state.get("email_preview", "")
+                    
+                    # Dump the full LangGraph state to an intel payload for the frontend /intel page
+                    outputs_dir = os.path.join(root_dir, "outputs")
+                    os.makedirs(outputs_dir, exist_ok=True)
+                    
+                    intel_db_path = os.path.join(outputs_dir, "intel_db.json")
+                    intel_db = {}
+                    if os.path.exists(intel_db_path):
+                        try:
+                            with open(intel_db_path, "r") as f:
+                                intel_db = json.load(f)
+                        except json.JSONDecodeError:
+                            pass
+                    
+                    intel_db[lead_id] = state
+                    temp_intel = intel_db_path + ".tmp"
+                    with open(temp_intel, "w") as f:
+                        json.dump(intel_db, f, indent=4)
+                    os.replace(temp_intel, intel_db_path)
+                        
+                    # Stream this row instantly to the Ledger
+                    temp_leads = leads_file + ".tmp"
+                    df.to_csv(temp_leads, index=False)
+                    os.replace(temp_leads, leads_file)
+                    
+                    temp_global = GLOBAL_LEADS_CSV + ".tmp"
+                    df.to_csv(temp_global, index=False)
+                    os.replace(temp_global, GLOBAL_LEADS_CSV)
                 
             except Exception as e:
                 print(f"Error processing lead {lead_id}: {e}")
-                df.at[index, "status"] = "Error"
+                with file_lock:
+                    df.at[index, "status"] = "Error"
+                    temp_leads = leads_file + ".tmp"
+                    df.to_csv(temp_leads, index=False)
+                    os.replace(temp_leads, leads_file)
+                    
+                    temp_global = GLOBAL_LEADS_CSV + ".tmp"
+                    df.to_csv(temp_global, index=False)
+                    os.replace(temp_global, GLOBAL_LEADS_CSV)
                 
-            # Stream this row instantly to the Ledger
-            df.to_csv(leads_file, index=False)
-            df.to_csv(GLOBAL_LEADS_CSV, index=False)
-            
-            # Tick progress
-            processed = index + 1
-            percent = int((processed / total) * 100)
-            update_batch_progress(batch_id, {
-                "percent": percent,
-                "processed_count": processed,
-                "total_count": total
-            })
+            with file_lock:
+                # Tick progress
+                processed += 1
+                percent = int((processed / total) * 100)
+                update_batch_progress(batch_id, {
+                    "percent": percent,
+                    "processed_count": processed,
+                    "total_count": total
+                })
+
+        # Process all leads concurrently using worker threads
+        # Set max_workers=2 to balance parallel execution without overloading the local Ollama instance & locking up the system CPU.
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [executor.submit(process_lead, index, row) for index, row in df.iterrows()]
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Future execution error: {e}")
             
         # Finish
         update_batch_progress(batch_id, {
