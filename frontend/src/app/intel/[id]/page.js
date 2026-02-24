@@ -36,14 +36,19 @@ export default function IntelPage({ params }) {
                     intent: data.agents?.intent?.score || 0,
                     status: data.status || "Ready State",
                     signal: data.agents?.intent?.reasoning || "Pending Analysis",
+                    intentRecommendation: data.agents?.intent?.recommendation || {},
                     news: data.agents?.research?.signals || [],
                     timing: {
                         recommended: data.agents?.timing?.recommended || "N/A",
                         recommendedReason: data.agents?.timing?.recommendedReason || "",
+                        optimalTimeWindow: data.agents?.timing?.optimal_time_window || "N/A",
+                        approach: data.agents?.timing?.approach || {},
+                        engagementPrediction: data.agents?.timing?.engagement_prediction || {},
+                        timeline: data.agents?.timing?.timeline || {},
+                        localTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         events: [
                             { label: "TRIGGER EVENT", desc: "Pipeline Initialized", time: "Just Now", type: "white" }
                         ],
-                        localTime: "14:32 PM",
                         targetTime: "11:32 AM (PST)"
                     },
                     draft: Array.isArray(data.agents?.message?.draft) ? data.agents.message.draft : [
@@ -145,9 +150,18 @@ export default function IntelPage({ params }) {
                                         <span className="font-mono text-xs text-primary uppercase tracking-widest mt-1">{target.status}</span>
                                     </div>
                                 </div>
-                                <div className="mt-4 pt-4 border-t border-dashed border-ink/30 flex justify-between items-center font-mono text-xs">
-                                    <span className="text-ink/50">SIGNAL STRENGTH</span>
-                                    <span className="text-ink font-bold">{target.signal}</span>
+                                <div className="mt-4 pt-4 border-t border-dashed border-ink/30 flex flex-col gap-3 font-mono text-xs">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <span className="text-ink/50 w-24 shrink-0">SIGNALS</span>
+                                        <span className="text-ink font-bold text-right leading-tight max-h-[80px] overflow-y-auto">{target.signal}</span>
+                                    </div>
+                                    <div className="flex justify-between items-start gap-2">
+                                        <span className="text-ink/50 w-24 shrink-0">ACTION</span>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className="text-ink font-bold text-right leading-tight text-primary text-[11px]">{target.intentRecommendation.next_best_action || "Awaiting strategy"}</span>
+                                            <span className="bg-mute px-1.5 py-0.5 border border-ink/20 inline-block text-[10px]">URGENCY: {target.intentRecommendation.urgency || "Unknown"}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -205,34 +219,54 @@ export default function IntelPage({ params }) {
                                                     <span className="material-symbols-outlined text-white text-[16px]">bolt</span>
                                                 </div>
                                                 <div className="flex flex-col pt-0.5 mt-[-2px]">
-                                                    <span className="font-mono text-xs font-bold text-primary uppercase tracking-wider mb-1">RECOMMENDED ACTION</span>
-                                                    <span className="font-display font-bold text-lg leading-tight">{target.timing.recommended}</span>
+                                                    <span className="font-mono text-xs font-bold text-primary uppercase tracking-wider mb-1">RECOMMENDED WINDOW</span>
+                                                    <span className="font-display font-bold text-lg leading-tight">{target.timing.optimalTimeWindow}</span>
+                                                    <span className="font-mono text-xs text-ink/70 mt-1">Send at: {target.timing.recommended}</span>
                                                     <p className="text-xs text-ink/50 mt-1">{target.timing.recommendedReason}</p>
                                                 </div>
                                             </div>
-                                            {/* Items: Past */}
-                                            {target.timing.events.map((ev, i) => (
-                                                <div key={i} className={`flex items-start gap-4 ${ev.type === 'white' ? 'opacity-60' : 'opacity-40'}`}>
-                                                    <div className="w-6 h-6 rounded-none border border-ink bg-paper flex items-center justify-center shrink-0">
-                                                        <div className={`w-2 h-2 ${ev.type === 'white' ? 'bg-ink' : 'bg-ink/40'}`}></div>
+                                            {/* Item 2: Approach Type */}
+                                            <div className="flex items-start gap-4 opacity-80 mt-2">
+                                                <div className="w-6 h-6 rounded-none border border-ink bg-paper flex items-center justify-center shrink-0">
+                                                    <div className={`w-2 h-2 bg-ink`}></div>
+                                                </div>
+                                                <div className="flex flex-col pt-0.5 mt-[-2px] w-full">
+                                                    <span className="font-mono text-xs font-bold text-ink/50 uppercase tracking-wider mb-1">APPROACH STRATEGY</span>
+                                                    <span className="font-body font-medium text-sm text-primary">{target.timing.approach?.type || "Standard"} (Urgency: {target.timing.approach?.urgency || 0})</span>
+                                                    <ul className="text-xs text-ink/60 mt-1 list-disc pl-4">
+                                                        {target.timing.approach?.content_suggestions?.map((s, idx) => (
+                                                            <li key={idx}>{s}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            {/* Item 3: Predictive */}
+                                            <div className="flex items-start gap-4 opacity-60">
+                                                <div className="w-6 h-6 rounded-none border border-ink bg-paper flex items-center justify-center shrink-0">
+                                                    <div className={`w-2 h-2 bg-ink/40`}></div>
+                                                </div>
+                                                <div className="flex flex-col pt-0.5 mt-[-2px] w-full">
+                                                    <span className="font-mono text-xs font-bold text-ink/50 uppercase tracking-wider mb-1">PREDICTION MODEL</span>
+                                                    <div className="flex justify-between items-center text-xs mt-1">
+                                                        <span className="font-medium text-ink/80">Resp. Prob:</span>
+                                                        <span className="font-mono ml-2">{(target.timing.engagementPrediction?.response_probability * 100 || 0).toFixed(0)}%</span>
                                                     </div>
-                                                    <div className="flex flex-col pt-0.5 mt-[-2px]">
-                                                        <span className="font-mono text-xs font-bold text-ink/50 uppercase tracking-wider mb-1">{ev.label}</span>
-                                                        <span className="font-body font-medium text-sm">{ev.desc}</span>
-                                                        <span className="font-mono text-xs text-ink/40 mt-0.5">{ev.time}</span>
+                                                    <div className="flex justify-between items-center text-xs">
+                                                        <span className="font-medium text-ink/80">Est. Delay:</span>
+                                                        <span className="font-mono ml-2">{target.timing.engagementPrediction?.expected_delay || 0} hrs</span>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            </div>
                                         </div>
                                         {/* Windows Widget Style at bottom */}
                                         <div className="absolute bottom-6 left-6 right-6 border border-ink p-3 bg-mute/50">
                                             <div className="flex justify-between items-center mb-2">
-                                                <span className="font-mono text-[10px] uppercase">Timezone Sync</span>
+                                                <span className="font-mono text-[10px] uppercase">Timeline Logs</span>
                                                 <span className="w-2 h-2 bg-data-green rounded-full animate-pulse"></span>
                                             </div>
                                             <div className="font-mono text-xs text-ink/60">
-                                                Local: {target.timing.localTime}<br />
-                                                Target: {target.timing.targetTime}
+                                                Init: {target.timing.timeline?.first_contact ? new Date(target.timing.timeline.first_contact).toLocaleDateString() : "N/A"}<br />
+                                                Next: {target.timing.timeline?.next_followup || "N/A"}
                                             </div>
                                         </div>
                                     </div>

@@ -144,8 +144,13 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
     ]
     research_signals = ["High Engagement", "Target Account Hit"]
     intent_reasoning = f"Based on {row.get('visits', 0)} visits and {row.get('pages_per_visit', 0)} pages/visit."
+    intent_recommendation = {"next_best_action": "Pending analysis", "urgency": "Medium"}
     timing_rec = "Tuesday 10:00 AM"
     timing_reason = "High probability of engagement based on historical activity."
+    optimal_time_window = "N/A"
+    approach = {"type": "standard", "urgency": 50, "content_suggestions": ["Follow up"]}
+    engagement_prediction = {"response_probability": 0.0, "expected_delay": 24}
+    timeline = {}
     
     from datetime import datetime
     now_str = datetime.now().strftime("%H:%M:%S")
@@ -177,6 +182,8 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
                 if "key_signals" in state and isinstance(state["key_signals"], list):
                     signals = [s.get("signal", str(s)) if isinstance(s, dict) else str(s) for s in state["key_signals"]]
                     intent_reasoning = " \u2022 ".join(signals)
+                if "intent_recommendation" in state:
+                    intent_recommendation = state["intent_recommendation"]
                 
                 # Map message (Agent 3) - Split into lines and breaks for React rendering
                 if "email_preview" in state:
@@ -194,6 +201,13 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
                 if "timing" in state and isinstance(state["timing"], dict):
                     timing_rec = f"{state['timing'].get('recommended_date', '')} {state['timing'].get('send_time', '')}".strip()
                     timing_reason = state['timing'].get('reasoning', '')
+                    optimal_time_window = state['timing'].get('optimal_time_window', '')
+                if "approach" in state:
+                    approach = state["approach"]
+                if "engagement_prediction" in state:
+                    engagement_prediction = state["engagement_prediction"]
+                if "timeline" in state:
+                    timeline = state["timeline"]
                 
                 # Map logs (Agent 5 - Construct from the state's success)
                 if "lead_summary" in state:
@@ -225,14 +239,19 @@ def get_lead_details(record_id: str, batch_id: Optional[str] = None):
             },
             "intent": {
                 "score": row.get('intent_score', row.get('intent', 0)),
-                "reasoning": intent_reasoning
+                "reasoning": intent_reasoning,
+                "recommendation": intent_recommendation
             },
             "message": {
                 "draft": email_draft
             },
             "timing": {
                 "recommended": timing_rec,
-                "recommendedReason": timing_reason
+                "recommendedReason": timing_reason,
+                "optimal_time_window": optimal_time_window,
+                "approach": approach,
+                "engagement_prediction": engagement_prediction,
+                "timeline": timeline
             },
             "crm": {
                 "logs": crm_logs
