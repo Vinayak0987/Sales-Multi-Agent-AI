@@ -10,23 +10,48 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 LEADS_CSV = os.path.join(DATA_DIR, "Leads_Data.csv")
 
+import json
+
 def _load_leads_df(batch_id: Optional[str] = None):
-    """Load the leads DataFrame, optionally constrained to a specific batch."""
-    target_csv = LEADS_CSV
+    """Load the leads DataFrame from intel_db.json, optionally constrained to a specific batch."""
     
-    if batch_id:
-        batch_dir = os.path.join(DATA_DIR, "batches", batch_id)
-        batch_csv = os.path.join(batch_dir, "Leads_Data.csv")
-        if os.path.exists(batch_csv):
-            target_csv = batch_csv
-            
-    if not os.path.exists(target_csv):
-        raise HTTPException(status_code=404, detail="Leads data not found")
+    intel_db_path = os.path.join(BASE_DIR, "outputs", "intel_db.json")
+    
+    if not os.path.exists(intel_db_path):
+        return pd.DataFrame()
         
-    df = pd.read_csv(target_csv)
-    # Drop unnamed index columns
-    df = df.loc[:, ~df.columns.str.startswith("Unnamed")]
-    return df
+    try:
+        with open(intel_db_path, "r") as f:
+            intel_data = json.load(f)
+            
+        leads_list = []
+        for lead_id, data in intel_data.items():
+            lead_info = data.get("lead", {})
+            
+            # Map the nested structure to a flat dictionary for the dataframe
+            flat_lead = {
+                "lead_id": lead_id,
+                "name": lead_info.get("name", "Unknown"),
+                "company": lead_info.get("company", "Unknown"),
+                "title": lead_info.get("title", "Unknown"),
+                "region": lead_info.get("region", "Unknown"),
+                "lead_source": lead_info.get("lead_source", "Unknown"),
+                "visits": lead_info.get("visits", 0),
+                "time_on_site": lead_info.get("time_on_site", 0.0),
+                "pages_per_visit": lead_info.get("pages_per_visit", 0.0),
+                "converted": lead_info.get("converted", False),
+                "intent_score": data.get("intent_score", 0),
+                "status": "Ready",
+                "record_id": lead_id
+            }
+            leads_list.append(flat_lead)
+            
+        df = pd.DataFrame(leads_list)
+        return df
+        
+    except Exception as e:
+        print(f"Error loading intel_db.json: {e}")
+        return pd.DataFrame()
 
 @router.get("")
 def list_leads(
@@ -295,7 +320,24 @@ def update_lead_status(record_id: str, payload: dict = Body(...)):
     if intent_score is not None:
         df.at[idx, 'intent_score'] = intent_score
         
-    df.to_csv(LEADS_CSV, index=False)
+    # We should update intel_db.json instead of Leads_Data.csv
+    intel_db_path = os.path.join(BASE_DIR, "outputs", "intel_db.json")
+    if os.path.exists(intel_db_path):
+        try:
+            with open(intel_db_path, "r") as f:
+                intel_data = json.load(f)
+                
+            lead_id_val = df.at[idx, 'lead_id']
+            if lead_id_val in intel_data:
+                if new_status:
+                    intel_data[lead_id_val]["status"] = new_status
+                if intent_score is not None:
+                    intel_data[lead_id_val]["intent_score"] = float(intent_score)
+                    
+            with open(intel_db_path, "w") as f:
+                json.dump(intel_data, f, indent=4)
+        except Exception as e:
+            print(f"Failed to update intel_db.json: {e}")
     
     # Return updated row
     updated_row = df.loc[idx].where(pd.notnull(df.loc[idx]), None).to_dict()

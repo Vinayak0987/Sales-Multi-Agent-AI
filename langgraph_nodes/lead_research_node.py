@@ -12,6 +12,7 @@ def prepare_data(state):
     
     clean_lead = {
         "lead_id": str(lead.get("lead_id", "")),
+        "name": str(lead.get("name", "")),
         "visits": int(lead.get("visits", 0) if pd.notna(lead.get("visits")) else 0) if 'pd' in globals() else int(lead.get("visits", 0)),
         "time_on_site": float(lead.get("time_on_site", 0.0)),
         "pages_per_visit": float(lead.get("pages_per_visit", 0.0)),

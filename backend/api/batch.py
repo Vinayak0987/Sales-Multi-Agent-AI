@@ -196,10 +196,6 @@ def process_batch_background(batch_id: str, start_index: int = None, end_index: 
                     temp_leads = leads_file + ".tmp"
                     df.to_csv(temp_leads, index=False)
                     os.replace(temp_leads, leads_file)
-                    
-                    temp_global = GLOBAL_LEADS_CSV + ".tmp"
-                    df.to_csv(temp_global, index=False)
-                    os.replace(temp_global, GLOBAL_LEADS_CSV)
                 
             except Exception as e:
                 print(f"Error processing lead {lead_id}: {e}")
@@ -208,10 +204,6 @@ def process_batch_background(batch_id: str, start_index: int = None, end_index: 
                     temp_leads = leads_file + ".tmp"
                     df.to_csv(temp_leads, index=False)
                     os.replace(temp_leads, leads_file)
-                    
-                    temp_global = GLOBAL_LEADS_CSV + ".tmp"
-                    df.to_csv(temp_global, index=False)
-                    os.replace(temp_global, GLOBAL_LEADS_CSV)
                 
             with file_lock:
                 # Tick progress
@@ -225,7 +217,7 @@ def process_batch_background(batch_id: str, start_index: int = None, end_index: 
 
         # Process all leads concurrently using worker threads
         # Set max_workers=2 to balance parallel execution without overloading the local Ollama instance & locking up the system CPU.
-        with ThreadPoolExecutor(max_workers=2) as executor:
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = [executor.submit(process_lead, index, row) for index, row in df_to_process.iterrows()]
             for future in as_completed(futures):
                 try:

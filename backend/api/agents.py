@@ -254,7 +254,6 @@ async def analyze_lead(lead_id: str):
         lead_index = lead_match.index[0]
         leads_df.at[lead_index, "intent_score"] = new_intent_score
         leads_df.at[lead_index, "status"] = "Ready"  # Change status to show it was processed
-        leads_df.to_csv(LEADS_CSV, index=False)
         
         _agent_status["lead_research"]["last_run"] = pd.Timestamp.now().isoformat()
         

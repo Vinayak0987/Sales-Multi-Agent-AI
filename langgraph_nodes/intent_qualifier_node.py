@@ -14,6 +14,7 @@ def prepare_data(state):
         
     clean_lead = {
         "lead_id": str(lead.get("lead_id", "")),
+        "name": str(lead.get("name", "")),
         "company": str(lead.get("company", "")),
         "title": str(lead.get("title", "")),
         "industry": str(lead.get("industry", "Unknown")),
