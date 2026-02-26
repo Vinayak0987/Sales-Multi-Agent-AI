@@ -4,7 +4,7 @@ import time
 import json
 import pandas as pd
 from datetime import datetime
-from fastapi import APIRouter, File, UploadFile, HTTPException, BackgroundTasks
+from fastapi import APIRouter, File, UploadFile, HTTPException, BackgroundTasks, Form
 import asyncio
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -80,7 +80,7 @@ def get_batch_progress(batch_id: str):
     with open(progress_file, "r") as f:
         return json.load(f)
 
-def process_batch_background(batch_id: str):
+def process_batch_background(batch_id: str, start_index: int = None, end_index: int = None):
     """
     Background worker that uses LangGraph to process each lead sequentially 
     through 5 AI agents, updating the CSV instantly so the UI can stream it.
@@ -99,8 +99,20 @@ def process_batch_background(batch_id: str):
         df = pd.read_csv(leads_file)
         emails_df = pd.read_csv(emails_file) if os.path.exists(emails_file) else pd.DataFrame()
         
+        # Apply range filtering if specified
+        original_total = len(df)
+        
+        start_idx = start_index if start_index is not None and start_index >= 0 else 0
+        end_idx = end_index if end_index is not None and end_index > start_idx else original_total
+        
+        # Ensure we don't go out of bounds
+        end_idx = min(end_idx, original_total)
+        
+        # Slice the dataframe to only process the requested leads
+        df_to_process = df.iloc[start_idx:end_idx].copy()
+        
         # Load the Ollama LLM
-        llm = OllamaWrapper('minimax-m2:cloud')
+        llm = OllamaWrapper('minimax-m2.5:cloud')
         
         # Compile the 5 independent LangGraph pipelines
         lead_research_agent = create_lead_research_graph(llm, lead_research_prompts)
@@ -109,13 +121,14 @@ def process_batch_background(batch_id: str):
         followup_timing_agent = create_followup_timing_graph(llm, followup_timing_prompts)
         crm_logger_agent = create_crm_logger_graph()
         
-        total = len(df)
+        total = len(df_to_process)
         
         update_batch_progress(batch_id, {
             "percent": 0,
             "processed_count": 0,
             "total_count": total,
-            "agents": { k: "running" for k in ["research", "intent", "message", "timing", "logger"] }
+            "agents": { k: "running" for k in ["research", "intent", "message", "timing", "logger"] },
+            "message": f"Processing subset of {total} leads (rows {start_idx} to {end_idx-1})" if total < original_total else f"Processing all {total} leads"
         })
         
         # Stream analytics loop
@@ -213,7 +226,7 @@ def process_batch_background(batch_id: str):
         # Process all leads concurrently using worker threads
         # Set max_workers=2 to balance parallel execution without overloading the local Ollama instance & locking up the system CPU.
         with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = [executor.submit(process_lead, index, row) for index, row in df.iterrows()]
+            futures = [executor.submit(process_lead, index, row) for index, row in df_to_process.iterrows()]
             for future in as_completed(futures):
                 try:
                     future.result()
@@ -242,6 +255,8 @@ async def upload_batch(
     email_logs: UploadFile = File(...),
     leads_data: UploadFile = File(...),
     sales_pipeline: UploadFile = File(...),
+    start_index: int = Form(None),
+    end_index: int = Form(None),
 ):
     try:
         import uuid
@@ -267,7 +282,7 @@ async def upload_batch(
         
         update_batch_progress(batch_id, { "percent": 0 })
         
-        background_tasks.add_task(process_batch_background, batch_id)
+        background_tasks.add_task(process_batch_background, batch_id, start_index, end_index)
         
         return {
             "batch_id": batch_id,

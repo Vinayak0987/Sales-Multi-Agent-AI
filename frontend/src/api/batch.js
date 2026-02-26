@@ -1,6 +1,6 @@
 const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
-export async function uploadBatch(files) {
+export async function uploadBatch(files, startIndex = null, endIndex = null) {
     const formData = new FormData();
 
     if (files.agentMapping) formData.append("agent_mapping", files.agentMapping);
@@ -8,6 +8,10 @@ export async function uploadBatch(files) {
     if (files.emailLogs) formData.append("email_logs", files.emailLogs);
     if (files.leadsData) formData.append("leads_data", files.leadsData);
     if (files.salesPipeline) formData.append("sales_pipeline", files.salesPipeline);
+    
+    // Add optional range parameters
+    if (startIndex !== null && startIndex !== "") formData.append("start_index", startIndex);
+    if (endIndex !== null && endIndex !== "") formData.append("end_index", endIndex);
 
     const res = await fetch(`${API}/batch/upload`, {
         method: "POST",

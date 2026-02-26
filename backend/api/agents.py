@@ -13,7 +13,7 @@ class OllamaResponse:
         self.text = text
 
 class OllamaWrapper:
-    def __init__(self, model_name="minimax-m2:cloud"):
+    def __init__(self, model_name="minimax-m2.5:cloud"):
         self.model_name = model_name
         
     def generate_content(self, prompt):
@@ -174,7 +174,7 @@ async def analyze_lead(lead_id: str):
     """Trigger the LangGraph workflow to compute real insights for a specific lead."""
     # Configure the Ollama LLM
     try:
-        llm = OllamaWrapper('minimax-m2:cloud')
+        llm = OllamaWrapper('minimax-m2.5:cloud')
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to initialize Ollama LLM: {str(e)}")
         
@@ -276,7 +276,7 @@ async def analyze_dataset_bulk():
     print("Starting global background dataset analysis...")
     # Configure the Ollama LLM
     try:
-        llm = OllamaWrapper('minimax-m2:cloud')
+        llm = OllamaWrapper('minimax-m2.5:cloud')
     except Exception as e:
         print(f"Error initializing Ollama LLM: {str(e)}")
         return

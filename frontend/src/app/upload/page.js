@@ -10,6 +10,8 @@ export default function UploadProtocolPage() {
     const [files, setFiles] = useState({});
     const [uploadStatus, setUploadStatus] = useState("idle"); // idle, uploading, success, error
     const [uploadResult, setUploadResult] = useState(null);
+    const [startIndex, setStartIndex] = useState("");
+    const [endIndex, setEndIndex] = useState("");
     const router = useRouter();
 
     const progress = useBatchProgress(uploadResult?.batch_id);
@@ -27,7 +29,7 @@ export default function UploadProtocolPage() {
         setUploadStatus("uploading");
 
         try {
-            const result = await uploadBatch(files);
+            const result = await uploadBatch(files, startIndex, endIndex);
             setUploadResult(result);
             setUploadStatus("success");
 
@@ -83,6 +85,42 @@ export default function UploadProtocolPage() {
                                 <BatchFileInput label="Email Logs" fileKey="emailLogs" files={files} setFiles={setFiles} />
                                 <BatchFileInput label="Leads Data" fileKey="leadsData" files={files} setFiles={setFiles} />
                                 <BatchFileInput label="Sales Pipeline" fileKey="salesPipeline" files={files} setFiles={setFiles} />
+                            </div>
+
+                            {/* Range Selection Inputs */}
+                            <div className="flex flex-col gap-4">
+                                <div className="mb-2">
+                                    <h3 className="font-mono text-sm font-bold uppercase tracking-wider text-ink border-l-4 border-primary pl-3">Optional Range Limits</h3>
+                                    <p className="font-mono text-xs text-ink/60 mt-2">Limit execution to a subset of the leads database.</p>
+                                </div>
+                                <div className="flex items-center gap-4 w-full">
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <label className="font-mono text-[10px] uppercase font-bold text-ink/60" htmlFor="start-index">Start Lead Row</label>
+                                        <input 
+                                            id="start-index" 
+                                            type="number" 
+                                            min="0"
+                                            className="w-full bg-paper border-[2px] border-ink p-2 font-mono text-sm outline-none focus:border-primary transition-colors disabled:opacity-50"
+                                            placeholder="e.g. 0" 
+                                            value={startIndex} 
+                                            onChange={(e) => setStartIndex(e.target.value)} 
+                                            disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-1 w-1/2">
+                                        <label className="font-mono text-[10px] uppercase font-bold text-ink/60" htmlFor="end-index">End Lead Row</label>
+                                        <input 
+                                            id="end-index" 
+                                            type="number" 
+                                            min="1"
+                                            className="w-full bg-paper border-[2px] border-ink p-2 font-mono text-sm outline-none focus:border-primary transition-colors disabled:opacity-50"
+                                            placeholder="e.g. 10" 
+                                            value={endIndex} 
+                                            onChange={(e) => setEndIndex(e.target.value)} 
+                                            disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Helper / Log Output */}
